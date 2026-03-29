@@ -44,16 +44,22 @@ public class MapDrawUINavigator : MonoBehaviour
     
     void LoadGameScene()
     {
-        // 【关键】获取当前画板的纹理
         MapDrawCore drawCore = FindObjectOfType<MapDrawCore>();
+        MapFillSystem fillSystem = FindObjectOfType<MapFillSystem>();
 
         if (drawCore != null)
         {
-            // 保存绘制好的地图到全局数据
+            // 保存地图
             MapGlobalData.savedMapTexture = drawCore.GetDrawTexture();
         }
 
-        // 跳转到游戏场景
+        if (fillSystem != null)
+        {
+            // 保存陆地/海洋颜色（关键！）
+            MapGlobalData.landColor = fillSystem.landColor;
+            MapGlobalData.seaColor = fillSystem.seaColor;
+        }
+
         SceneManager.LoadScene("GameScene");
     }
 
