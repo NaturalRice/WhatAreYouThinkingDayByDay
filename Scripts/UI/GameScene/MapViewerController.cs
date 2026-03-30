@@ -8,7 +8,7 @@ public class MapViewerController : MonoBehaviour
 
     [Header("缩放设置")]
     public float minScale = 0.5f;
-    public float maxScale = 20.0f;    // 放大上限拉满
+    public float maxScale = 50.0f;    // 放大上限拉满
     public float zoomSpeed = 5.0f;
 
     [Header("移动设置")]
@@ -46,7 +46,7 @@ public class MapViewerController : MonoBehaviour
         float v = Input.GetAxisRaw("Vertical");
         Vector2 inputDir = new Vector2(h, v).normalized;
         Vector2 move = inputDir * moveSpeed * Time.deltaTime;
-        mapRectTransform.anchoredPosition += move;
+        mapRectTransform.anchoredPosition += -move;
     }
 
     // 鼠标中键拖动
