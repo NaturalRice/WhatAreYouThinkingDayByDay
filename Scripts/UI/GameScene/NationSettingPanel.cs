@@ -19,7 +19,7 @@ public class NationSettingPanel : MonoBehaviour
     };
 
     // 关键：国家是否创建成功
-    public bool isNationCreated = false;
+    public static bool isNationCreated = false;
 
     void Start()
     {
@@ -68,9 +68,6 @@ public class NationSettingPanel : MonoBehaviour
             return;
         }
 
-        // 创建成功
-        isNationCreated = true;
-
         // 同步颜色给城池系统
         FindObjectOfType<NationCityManager>().SetNationData(currentColor);
 
@@ -80,6 +77,8 @@ public class NationSettingPanel : MonoBehaviour
         Debug.Log("========================");
 
         gameObject.SetActive(false);
+        // 创建成功
+        isNationCreated = true; 
     }
 
     public void OpenPanel()

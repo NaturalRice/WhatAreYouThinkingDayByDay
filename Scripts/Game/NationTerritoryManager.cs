@@ -37,7 +37,7 @@ public class NationTerritoryManager : MonoBehaviour
 
     void Update()
     {
-        if (!nationPanel.isNationCreated || territoryTex == null)
+        if (!NationSettingPanel.isNationCreated || territoryTex == null)
             return;
 
         int count = cityManager.GetCityCount();
