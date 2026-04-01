@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Game.Game.Terrain;
 
 /// <summary>
 /// 地图UI处理器：独立管理所有UI按钮/滑块事件绑定、提示文本更新、预览更新
@@ -24,6 +25,16 @@ namespace Game.Map
         public MapFillSystem fillSystem;
         public MapHistoryManager historyManager;
         public MapIOManager mapIOManager;
+        
+        [Header("地形画笔按钮")]
+        public Button btnMountain;
+        public Button btnForest;
+        public Button btnDesert;
+        public Button btnRiver;
+        public Button btnSaltMine;
+        public Button btnIronMine;
+        public Button btnGoldMine;
+        public Button btnClayHill;
 
         private void Awake()
         {
@@ -41,8 +52,30 @@ namespace Game.Map
             BindAllUIEvents();
 
             // 初始化UI状态
-            UpdateBrushPreview(Color.black, mapDrawCore.brushSize);
+            UpdateBrushPreview(mapDrawCore.GetCurrentBrushColor(), mapDrawCore.brushSize);
             UpdateTipText("当前模式：黑色画笔 | 绘制陆地轮廓");
+            
+            // 绑定地形画笔按钮（适配新的SetBrushColor方法）
+            btnMountain.onClick.AddListener(() => SetTerrainBrush(TerrainType.Mountain, "山地"));
+            btnForest.onClick.AddListener(() => SetTerrainBrush(TerrainType.Forest, "森林"));
+            btnDesert.onClick.AddListener(() => SetTerrainBrush(TerrainType.Desert, "沙漠"));
+            btnRiver.onClick.AddListener(() => SetTerrainBrush(TerrainType.River, "河流"));
+            btnSaltMine.onClick.AddListener(() => SetTerrainBrush(TerrainType.SaltMine, "盐矿"));
+            btnIronMine.onClick.AddListener(() => SetTerrainBrush(TerrainType.IronMine, "铁矿"));
+            btnGoldMine.onClick.AddListener(() => SetTerrainBrush(TerrainType.GoldMine, "金矿"));
+            btnClayHill.onClick.AddListener(() => SetTerrainBrush(TerrainType.ClayHill, "黏土丘"));
+        }
+
+        /// <summary>
+        /// 地形画笔设置（统一调用SetBrushColor）
+        /// </summary>
+        private void SetTerrainBrush(TerrainType terrainType, string terrainName)
+        {
+            fillSystem.ExitFillMode();
+            mapDrawCore.SetPenMode(true); // 确保是画笔模式（非橡皮）
+            mapDrawCore.SetBrushColor(terrainType);
+            UpdateBrushPreview(mapDrawCore.GetCurrentBrushColor(), mapDrawCore.brushSize);
+            UpdateTipText($"当前模式：{terrainName}画笔 | 绘制{terrainName}地形");
         }
 
         #region UI事件绑定
@@ -69,7 +102,7 @@ namespace Game.Map
         }
 
         /// <summary>
-        /// 绑定画笔/橡皮按钮事件
+        /// 绑定画笔/橡皮按钮事件（适配新的SetBrushColor）
         /// </summary>
         private void BindPenEraserButtons()
         {
@@ -79,6 +112,7 @@ namespace Game.Map
                 {
                     fillSystem.ExitFillMode(); // 退出填充模式
                     mapDrawCore.SetPenMode(true); // 切换为画笔模式
+                    mapDrawCore.SetBrushColor(null, Color.black); // 恢复黑色普通画笔
                     UpdateBrushPreview(Color.black, mapDrawCore.brushSize);
                     UpdateTipText("当前模式：黑色画笔 | 绘制陆地轮廓");
                 });
@@ -189,7 +223,7 @@ namespace Game.Map
             mapDrawCore.brushSize = savedSize;
             brushSizeSlider.value = savedSize;
             UpdateBrushSizeText(savedSize);
-            UpdateBrushPreview(Color.black, savedSize);
+            UpdateBrushPreview(mapDrawCore.GetCurrentBrushColor(), savedSize);
 
             // 绑定值变更事件
             brushSizeSlider.onValueChanged.AddListener((float val) =>
@@ -198,7 +232,7 @@ namespace Game.Map
                 mapDrawCore.brushSize = newSize;
                 UpdateBrushSizeText(newSize);
                 UpdateBrushPreview(
-                    mapDrawCore.isPenMode ? Color.black : Color.white,
+                    mapDrawCore.isPenMode ? mapDrawCore.GetCurrentBrushColor() : Color.white,
                     newSize
                 );
                 PlayerPrefs.SetInt("SavedBrushSize", newSize);

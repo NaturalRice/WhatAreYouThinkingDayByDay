@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Game.Game.Terrain;
 
 namespace Game.Map
 {
@@ -11,6 +12,8 @@ namespace Game.Map
 
         [Header("绘制配置")] public int brushSize = 15;
         public bool isPenMode = true;
+        // 核心：统一管理画笔颜色（默认黑色画笔）
+        private Color drawColor = Color.black;
 
         [Header("依赖模块")] public MapCanvasTransform canvasTransform;
         public MapFillSystem fillSystem;
@@ -79,14 +82,15 @@ namespace Game.Map
         }
 
         /// <summary>
-        /// 绘制点
+        /// 绘制点（核心修改：使用统一的drawColor）
         /// </summary>
         private void DrawPoint(Vector2 pos)
         {
             int x = (int)pos.x;
             int y = (int)pos.y;
             int brushHalf = brushSize / 2;
-            Color drawColor = isPenMode ? Color.black : Color.white;
+            // 移除硬编码黑白，直接使用drawColor（橡皮模式自动用白色）
+            Color finalDrawColor = isPenMode ? drawColor : Color.white;
 
             for (int dy = -brushHalf; dy <= brushHalf; dy++)
             {
@@ -100,7 +104,7 @@ namespace Game.Map
                     float distance = Mathf.Sqrt(dx * dx + dy * dy);
                     if (distance <= brushHalf)
                     {
-                        drawTexture.SetPixel(targetX, targetY, drawColor);
+                        drawTexture.SetPixel(targetX, targetY, finalDrawColor);
                     }
                 }
             }
@@ -155,5 +159,37 @@ namespace Game.Map
         {
             isPenMode = isPen;
         }
+
+        /// <summary>
+        /// 通用设置画笔颜色（替代原SetTerrainBrush/SetNormalBrush）
+        /// </summary>
+        /// <param name="terrainType">地形类型（传null则用普通颜色）</param>
+        /// <param name="normalColor">普通画笔颜色（地形模式下忽略）</param>
+        public void SetBrushColor(TerrainType? terrainType = null, Color normalColor = default)
+        {
+            if (terrainType.HasValue)
+            {
+                var config = TerrainManager.Instance.GetTerrainConfig(terrainType.Value);
+                if (config != null)
+                {
+                    drawColor = config.terrainColor;
+                }
+                else
+                {
+                    Debug.LogWarning($"[MapDrawCore] 未找到{terrainType.Value}的地形配置，默认使用黑色");
+                    drawColor = Color.black;
+                }
+            }
+            else
+            {
+                // 普通画笔颜色（默认黑色）
+                drawColor = normalColor == default ? Color.black : normalColor;
+            }
+        }
+
+        /// <summary>
+        /// 获取当前画笔颜色（供UI预览使用）
+        /// </summary>
+        public Color GetCurrentBrushColor() => drawColor;
     }
 }
