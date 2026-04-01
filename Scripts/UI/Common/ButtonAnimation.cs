@@ -1,42 +1,47 @@
+using Game.Map;
+using Game.UI.MainMenu;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class ButtonAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+namespace Game.UI.Common
 {
-    private UIMainMenu mainMenu;
-    private MapDrawUINavigator mapNav;
-    private Button btn;
-
-    void Awake()
+    public class ButtonAnimation : MonoBehaviour
     {
-        // 自动找当前场景的动画管理者
-        mainMenu = FindObjectOfType<UIMainMenu>();
-        mapNav = FindObjectOfType<MapDrawUINavigator>();
-        btn = GetComponent<Button>();
-    }
+        private UIMainMenu mainMenu;
+        private MapDrawUINavigator mapNav;
+        private Button btn;
 
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        // 空判断保护，不报错！
-        if (btn == null) return;
+        void Awake()
+        {
+            // 自动找当前场景的动画管理者
+            mainMenu = FindObjectOfType<UIMainMenu>();
+            mapNav = FindObjectOfType<MapDrawUINavigator>();
+            btn = GetComponent<Button>();
+        }
 
-        if (mainMenu != null)
-            mainMenu.OnPointerEnter(btn);
-        
-        if (mapNav != null)
-            mapNav.OnPointerEnter(btn);
-    }
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            // 空判断保护，不报错！
+            if (btn == null) return;
 
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        // 空判断保护，不报错！
-        if (btn == null) return;
+            if (mainMenu != null)
+                mainMenu.OnPointerEnter(btn);
 
-        if (mainMenu != null)
-            mainMenu.OnPointerExit(btn);
-        
-        if (mapNav != null)
-            mapNav.OnPointerExit(btn);
+            if (mapNav != null)
+                mapNav.OnPointerEnter(btn);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            // 空判断保护，不报错！
+            if (btn == null) return;
+
+            if (mainMenu != null)
+                mainMenu.OnPointerExit(btn);
+
+            if (mapNav != null)
+                mapNav.OnPointerExit(btn);
+        }
     }
 }
