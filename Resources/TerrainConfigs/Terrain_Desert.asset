@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65aacfd9bd9b33f469c5c5756e2a2a29, type: 3}
+  m_Name: Terrain_Desert
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainConfig
+  terrainType: 3
+  terrainName: Desert
+  terrainColor: {r: 0.8679245, g: 0.83632064, b: 0.52730507, a: 1}
+  canBuildCity: 1
+  blockTerritory: 0
+  foodBonus: 0
+  goldBonus: 0
+  woodBonus: 2
+  stoneBonus: 2
+  livestockBonus: 1
+  horseBonus: 1
+  clothBonus: 1
+  leatherBonus: 1
+  forageBonus: 1
+  saltBonus: 1
+  ironBonus: 0
+  copperBonus: 0
+  goldOreBonus: 20
+  clayBonus: 0

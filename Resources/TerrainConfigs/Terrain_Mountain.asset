@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65aacfd9bd9b33f469c5c5756e2a2a29, type: 3}
+  m_Name: Terrain_Mountain
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainConfig
+  terrainType: 1
+  terrainName: MounTain
+  terrainColor: {r: 0.5471698, g: 0.5471698, b: 0.51826274, a: 1}
+  canBuildCity: 1
+  blockTerritory: 1
+  foodBonus: 3
+  goldBonus: 3
+  woodBonus: 3
+  stoneBonus: 3
+  livestockBonus: 3
+  horseBonus: 3
+  clothBonus: 3
+  leatherBonus: 3
+  forageBonus: 3
+  saltBonus: 0
+  ironBonus: 0
+  copperBonus: 0
+  goldOreBonus: 0
+  clayBonus: 0

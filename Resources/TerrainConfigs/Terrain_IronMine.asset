@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65aacfd9bd9b33f469c5c5756e2a2a29, type: 3}
+  m_Name: Terrain_IronMine
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainConfig
+  terrainType: 7
+  terrainName: IronMine
+  terrainColor: {r: 0.5188679, g: 0.43761125, b: 0.43761125, a: 1}
+  canBuildCity: 1
+  blockTerritory: 0
+  foodBonus: 0
+  goldBonus: 0
+  woodBonus: 0
+  stoneBonus: 0
+  livestockBonus: 0
+  horseBonus: 0
+  clothBonus: 0
+  leatherBonus: 0
+  forageBonus: 0
+  saltBonus: 0
+  ironBonus: 50
+  copperBonus: 0
+  goldOreBonus: 0
+  clayBonus: 0

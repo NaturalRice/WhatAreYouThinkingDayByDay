@@ -8,7 +8,7 @@ using System.Collections.Generic;
 public class MapFillSystem : MonoBehaviour
 {
     [Header("填充配置")]
-    public Color landColor = new Color(0.8f, 0.7f, 0.5f);   // 陆地填充色
+    public Color landColor = new Color(0.5f, 0.8f, 0.5f);   // 陆地填充色
     public Color seaColor = new Color(0.2f, 0.5f, 0.8f);    // 海洋填充色
     [Range(0f, 1f)] public float fillSensitivity = 0.1f;    // 填充灵敏度
     public float fillClickLockDelay = 0.1f;                 // 填充点击锁延迟
