@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 65aacfd9bd9b33f469c5c5756e2a2a29, type: 3}
-  m_Name: Terrain_Ocean
+  m_Name: River
   m_EditorClassIdentifier: Assembly-CSharp::TerrainConfig
-  terrainType: 0
-  terrainName: Ocean
-  terrainColor: {r: 0.2, g: 0.49803922, b: 0.8, a: 1}
+  terrainType: 5
+  terrainName: River
+  terrainColor: {r: 0, g: 0.9061289, b: 1, a: 1}
   canBuildCity: 0
-  blockTerritory: 1
+  blockTerritory: 0
   foodBonus: 0
   goldBonus: 0
   woodBonus: 0
@@ -26,8 +26,8 @@ MonoBehaviour:
   clothBonus: 0
   leatherBonus: 0
   forageBonus: 0
-  saltBonus: 0
+  saltBonus: 25
   ironBonus: 0
   copperBonus: 0
-  goldOreBonus: 30
+  goldOreBonus: 0
   clayBonus: 0

@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 65aacfd9bd9b33f469c5c5756e2a2a29, type: 3}
-  m_Name: Terrain_Mountain
+  m_Name: GoldMine
   m_EditorClassIdentifier: Assembly-CSharp::TerrainConfig
-  terrainType: 1
-  terrainName: MounTain
-  terrainColor: {r: 0.5471698, g: 0.5471698, b: 0.51826274, a: 1}
+  terrainType: 8
+  terrainName: GoldMine
+  terrainColor: {r: 1, g: 0.88245094, b: 0.2235294, a: 1}
   canBuildCity: 1
-  blockTerritory: 1
-  foodBonus: 3
-  goldBonus: 3
-  woodBonus: 3
-  stoneBonus: 3
-  livestockBonus: 3
-  horseBonus: 3
-  clothBonus: 3
-  leatherBonus: 3
-  forageBonus: 3
+  blockTerritory: 0
+  foodBonus: 0
+  goldBonus: 0
+  woodBonus: 0
+  stoneBonus: 0
+  livestockBonus: 0
+  horseBonus: 0
+  clothBonus: 0
+  leatherBonus: 0
+  forageBonus: 0
   saltBonus: 0
   ironBonus: 0
   copperBonus: 0
-  goldOreBonus: 0
+  goldOreBonus: 50
   clayBonus: 0

@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 65aacfd9bd9b33f469c5c5756e2a2a29, type: 3}
-  m_Name: Terrain_IronMine
+  m_Name: Plains
   m_EditorClassIdentifier: Assembly-CSharp::TerrainConfig
-  terrainType: 7
-  terrainName: IronMine
-  terrainColor: {r: 0.5188679, g: 0.43761125, b: 0.43761125, a: 1}
+  terrainType: 2
+  terrainName: Plains
+  terrainColor: {r: 0.49803922, g: 0.8, b: 0.49803922, a: 1}
   canBuildCity: 1
   blockTerritory: 0
-  foodBonus: 0
-  goldBonus: 0
-  woodBonus: 0
-  stoneBonus: 0
-  livestockBonus: 0
-  horseBonus: 0
-  clothBonus: 0
-  leatherBonus: 0
-  forageBonus: 0
+  foodBonus: 100
+  goldBonus: 15
+  woodBonus: 15
+  stoneBonus: 15
+  livestockBonus: 15
+  horseBonus: 15
+  clothBonus: 15
+  leatherBonus: 15
+  forageBonus: 15
   saltBonus: 0
-  ironBonus: 50
+  ironBonus: 0
   copperBonus: 0
   goldOreBonus: 0
   clayBonus: 0

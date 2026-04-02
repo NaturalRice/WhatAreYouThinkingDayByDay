@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 65aacfd9bd9b33f469c5c5756e2a2a29, type: 3}
-  m_Name: Terrain_ClayHill
+  m_Name: Forest
   m_EditorClassIdentifier: Assembly-CSharp::TerrainConfig
-  terrainType: 9
-  terrainName: ClayHill
-  terrainColor: {r: 0.6886792, g: 0.4307565, b: 0.3989142, a: 1}
+  terrainType: 4
+  terrainName: Forest
+  terrainColor: {r: 0.094215006, g: 0.745283, b: 0.111725666, a: 1}
   canBuildCity: 1
   blockTerritory: 0
-  foodBonus: 1
-  goldBonus: 1
-  woodBonus: 1
-  stoneBonus: 1
+  foodBonus: 5
+  goldBonus: 5
+  woodBonus: 100
+  stoneBonus: 30
   livestockBonus: 1
   horseBonus: 1
   clothBonus: 1
   leatherBonus: 1
   forageBonus: 1
   saltBonus: 1
-  ironBonus: 0
-  copperBonus: 0
+  ironBonus: 5
+  copperBonus: 5
   goldOreBonus: 0
-  clayBonus: 50
+  clayBonus: 0

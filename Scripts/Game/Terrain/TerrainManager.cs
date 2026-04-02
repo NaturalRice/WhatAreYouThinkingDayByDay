@@ -1,82 +1,57 @@
-using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
-using Game.Core;
+using UnityEngine;
 
 namespace Game.Game.Terrain
 {
-    public class TerrainManager : ManagerBase<TerrainManager>
+    public class TerrainManager : MonoBehaviour
     {
-        // 单例实例，全局唯一
-        public static TerrainManager Instance { get; private set; }
+        public static TerrainManager Instance;
 
-        // 所有地形配置（自动加载，无需手动赋值）
+        [Header("颜色匹配容错")]
+        public float colorTolerance = 0.15f;
+
         private Dictionary<TerrainType, TerrainConfig> terrainConfigDict = new Dictionary<TerrainType, TerrainConfig>();
         private Dictionary<Color, TerrainConfig> colorToTerrainDict = new Dictionary<Color, TerrainConfig>();
 
-        // 颜色匹配容错值（可在Inspector调整）
-        [SerializeField] private float colorTolerance = 0.08f;
-
         private void Awake()
         {
-            // 单例初始化，确保全局唯一
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
+            if (Instance == null) Instance = this;
+            else Destroy(gameObject);
 
-            Instance = this;
-            // 切换场景不销毁
-            DontDestroyOnLoad(gameObject);
-
-            // 自动从Resources加载所有TerrainConfig
             LoadAllTerrainConfigs();
         }
 
-        // 加载所有地形配置
         private void LoadAllTerrainConfigs()
         {
-            // 加载Resources/TerrainConfigs下的所有TerrainConfig
-            TerrainConfig[] allConfigs = Resources.LoadAll<TerrainConfig>("TerrainConfigs");
+            TerrainConfig[] configs = Resources.LoadAll<TerrainConfig>("TerrainConfigs");
 
-            if (allConfigs.Length == 0)
+            if (configs == null || configs.Length == 0)
             {
-                Debug.LogError("❌ 未在Resources/TerrainConfigs中找到任何TerrainConfig配置文件！");
+                Debug.LogError("❌ 未在 Resources/TerrainConfigs 目录下找到任何地形配置文件！");
                 return;
             }
 
-            // 构建字典
             terrainConfigDict.Clear();
             colorToTerrainDict.Clear();
-            foreach (var config in allConfigs)
+
+            foreach (var cfg in configs)
             {
-                if (config == null) continue;
-
-                // 按地形类型存储
-                if (!terrainConfigDict.ContainsKey(config.terrainType))
-                {
-                    terrainConfigDict.Add(config.terrainType, config);
-                }
-                else
-                {
-                    Debug.LogWarning($"⚠️ 地形类型 {config.terrainType} 存在重复配置，已跳过");
-                }
-
-                // 按颜色存储（用于地图像素匹配）
-                Color32 packedColor = config.terrainColor;
-                if (!colorToTerrainDict.ContainsKey(packedColor))
-                {
-                    colorToTerrainDict.Add(packedColor, config);
-                }
+                if (cfg == null) continue;
+                terrainConfigDict[cfg.terrainType] = cfg;
+                colorToTerrainDict[cfg.terrainColor] = cfg;
             }
 
-            Debug.Log($"✅ 成功加载 {allConfigs.Length} 个地形配置");
+            Debug.Log($"✅ 成功加载 {configs.Length} 个地形配置");
         }
 
-        // 对外提供获取配置的方法
         public TerrainConfig GetTerrainConfig(TerrainType type)
         {
+            if (terrainConfigDict == null)
+            {
+                Debug.LogError("❌ 地形配置字典未初始化！");
+                return null;
+            }
+
             if (terrainConfigDict.TryGetValue(type, out var config))
                 return config;
 
@@ -84,15 +59,11 @@ namespace Game.Game.Terrain
             return null;
         }
 
-        // 按像素颜色获取地形配置（核心方法，用于地图绘制/识别）
         public TerrainConfig GetTerrainAtColor(Color pixelColor)
         {
-            // 先精确匹配
-            Color32 packedPixel = pixelColor;
-            if (colorToTerrainDict.TryGetValue(packedPixel, out var exactConfig))
-                return exactConfig;
+            if (colorToTerrainDict == null || colorToTerrainDict.Count == 0)
+                return GetTerrainConfig(TerrainType.Plains);
 
-            // 精确匹配失败，用容错值模糊匹配
             foreach (var kvp in colorToTerrainDict)
             {
                 if (ColorSimilarity(pixelColor, kvp.Key) <= colorTolerance)
@@ -101,25 +72,30 @@ namespace Game.Game.Terrain
                 }
             }
 
-            // 无匹配，返回默认海洋
-            return GetTerrainConfig(TerrainType.Ocean);
+            return GetTerrainConfig(TerrainType.Plains);
         }
 
-        // 颜色相似度计算（0为完全相同，越大差异越大）
         private float ColorSimilarity(Color a, Color b)
         {
-            return Mathf.Sqrt(
-                Mathf.Pow(a.r - b.r, 2) +
-                Mathf.Pow(a.g - b.g, 2) +
-                Mathf.Pow(a.b - b.b, 2)
-            );
+            float r = Mathf.Abs(a.r - b.r);
+            float g = Mathf.Abs(a.g - b.g);
+            float bVal = Mathf.Abs(a.b - b.b);
+            return (r + g + bVal) / 3f;
         }
 
-        // 供MapDraw场景获取画笔颜色
-        public Color GetTerrainBrushColor(TerrainType type)
+        public TerrainConfig GetTerrainAtPosition(Texture2D mapTex, Vector2 mapPos)
         {
-            var config = GetTerrainConfig(type);
-            return config != null ? config.terrainColor : Color.white;
+            if (mapTex == null)
+                return GetTerrainConfig(TerrainType.Plains);
+
+            int x = Mathf.RoundToInt(mapPos.x);
+            int y = Mathf.RoundToInt(mapPos.y);
+
+            if (x < 0 || x >= mapTex.width || y < 0 || y >= mapTex.height)
+                return GetTerrainConfig(TerrainType.Plains);
+
+            Color color = mapTex.GetPixel(x, y);
+            return GetTerrainAtColor(color);
         }
     }
 }

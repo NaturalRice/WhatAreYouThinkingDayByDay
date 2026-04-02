@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 65aacfd9bd9b33f469c5c5756e2a2a29, type: 3}
-  m_Name: Terrain_Forest
+  m_Name: Ocean
   m_EditorClassIdentifier: Assembly-CSharp::TerrainConfig
-  terrainType: 4
-  terrainName: Forest
-  terrainColor: {r: 0.094215006, g: 0.745283, b: 0.111725666, a: 1}
-  canBuildCity: 1
-  blockTerritory: 0
-  foodBonus: 5
-  goldBonus: 5
-  woodBonus: 50
-  stoneBonus: 30
-  livestockBonus: 1
-  horseBonus: 1
-  clothBonus: 1
-  leatherBonus: 1
-  forageBonus: 1
-  saltBonus: 1
-  ironBonus: 5
-  copperBonus: 5
-  goldOreBonus: 0
+  terrainType: 0
+  terrainName: Ocean
+  terrainColor: {r: 0.2, g: 0.49803922, b: 0.8, a: 1}
+  canBuildCity: 0
+  blockTerritory: 1
+  foodBonus: 0
+  goldBonus: 0
+  woodBonus: 0
+  stoneBonus: 0
+  livestockBonus: 0
+  horseBonus: 0
+  clothBonus: 0
+  leatherBonus: 0
+  forageBonus: 0
+  saltBonus: 0
+  ironBonus: 0
+  copperBonus: 0
+  goldOreBonus: 30
   clayBonus: 0

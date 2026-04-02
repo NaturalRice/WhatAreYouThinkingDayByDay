@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using Game.Game.Terrain; 
 using Game.Map;
 
 namespace Game.Game.Nation
@@ -60,6 +61,9 @@ namespace Game.Game.Nation
         public Button btnPort;
         public Text textCapital;
         public float panelOffsetY = 80f;
+        
+        // 地图纹理（需和绘制地形的纹理一致）
+        public Texture2D mapTexture;
 
         public enum CityType
         {
@@ -215,6 +219,32 @@ namespace Game.Game.Nation
         void SelectType(CityType type)
         {
             if (!readyToBuild) return;
+            
+            // 港口特殊判断：必须在沿海
+            if (type == CityType.Port)
+            {
+                Vector2 pixelPos = ConvertLocalPosToPixelPos(buildUIPos);
+        
+                // 🔥 修复这里！
+                var terrainType = MapTerrainChecker.CheckTerrain(
+                    MapGlobalData.savedMapTexture, 
+                    pixelPos, 
+                    MapGlobalData.landColor, 
+                    MapGlobalData.seaColor
+                );
+
+                // 🔥 修复这里！
+                if (terrainType != MapTerrainChecker.MapTerrainType.Coastal)
+                {
+                    Debug.Log("港口只能建在海边！");
+                    panelCitySelect.SetActive(false);
+                    return;
+                }
+            }
+            
+            CreateCity(buildUIPos, type);
+            panelCitySelect.SetActive(false);
+            
             if (!IsLand(buildUIPos))
             {
                 Debug.Log("只能在陆地上建造");
@@ -234,37 +264,35 @@ namespace Game.Game.Nation
             {
                 CreateCity(buildUIPos, type);
             }
-
-            panelCitySelect.SetActive(false);
+            
             readyToBuild = false;
             cdTimer = createCD;
         }
 
         bool IsLand(Vector2 localPos)
         {
-            Color c = GetMapPixel(localPos);
-            float tol = 0.1f;
-            return !(
-                Mathf.Abs(c.r - MapGlobalData.seaColor.r) < tol &&
-                Mathf.Abs(c.g - MapGlobalData.seaColor.g) < tol &&
-                Mathf.Abs(c.b - MapGlobalData.seaColor.b) < tol
-            );
+            // 转换UI坐标到地图纹理像素坐标（复用原有坐标转换逻辑）
+            Vector2 pixelPos = ConvertLocalPosToPixelPos(localPos);
+            // 复用MapTerrainChecker的可建造判断
+            return MapTerrainChecker.CanBuildCityAtPosition(MapGlobalData.savedMapTexture, pixelPos);
         }
-
-        Color GetMapPixel(Vector2 localPos)
+        
+        // 2. 新增：UI本地坐标转地图纹理像素坐标（抽离原有GetMapPixel中的坐标转换逻辑）
+        public Vector2 ConvertLocalPosToPixelPos(Vector2 localPos)
         {
             Texture2D tex = MapGlobalData.savedMapTexture;
-            if (tex == null) return Color.blue;
+            if (tex == null) return Vector2.zero;
+    
             Rect r = mapRoot.rect;
             float xRatio = (localPos.x + r.width / 2f) / r.width;
             float yRatio = (localPos.y + r.height / 2f) / r.height;
+    
             int px = Mathf.RoundToInt(xRatio * tex.width);
             int py = Mathf.RoundToInt(yRatio * tex.height);
-            if (px < 0 || px >= tex.width || py < 0 || py >= tex.height)
-                return Color.blue;
-            return tex.GetPixel(px, py);
+            return new Vector2(px, py);
         }
 
+        // 3. 重构CreateCity方法：新增地形加成计算
         void CreateCity(Vector2 localPos, CityType type)
         {
             if (localPos.magnitude < 5f)
@@ -273,7 +301,12 @@ namespace Game.Game.Nation
                 return;
             }
 
-            GameObject city = new GameObject($"City_{type}");
+            // ========== 新增：获取地形配置 ==========
+            Vector2 pixelPos = ConvertLocalPosToPixelPos(localPos);
+            TerrainConfig terrainConfig = MapTerrainChecker.GetDetailedTerrain(MapGlobalData.savedMapTexture, pixelPos);
+            if (terrainConfig == null) terrainConfig = TerrainManager.Instance.GetTerrainConfig(TerrainType.Plains); // 兜底默认平原
+
+            GameObject city = new GameObject($"City_{type}_{terrainConfig.terrainType}");
             city.transform.SetParent(mapRoot);
             city.transform.localPosition = localPos;
             city.transform.localScale = Vector3.one;
@@ -290,9 +323,9 @@ namespace Game.Game.Nation
             float size = sizeNormal;
             Sprite sprite = spriteNormal;
 
-            // 核心资源产出赋值
+            // 核心资源产出赋值（基础值）
             int f = 0, g = 0, p = 0, a = 0;
-            // 扩展资源产出赋值
+            // 扩展资源产出赋值（基础值）
             int w = 0, s = 0, l = 0, h = 0, c = 0, le = 0, fo = 0, sa = 0, i = 0, co = 0, go = 0, cl = 0;
 
             switch (type)
@@ -419,21 +452,42 @@ namespace Game.Game.Nation
                     break;
             }
 
+            // ========== 新增：应用地形资源加成 ==========
+            // 核心资源加成
+            f = CalculateBonus(f, terrainConfig.foodBonus);
+            g = CalculateBonus(g, terrainConfig.goldBonus);
+            p = CalculateBonus(p, terrainConfig.goldBonus); // 人口暂用金币加成（可自定义）
+            a = CalculateBonus(a, terrainConfig.goldBonus); // 军队暂用金币加成（可自定义）
+            
+            // 扩展资源加成
+            w = CalculateBonus(w, terrainConfig.woodBonus);
+            s = CalculateBonus(s, terrainConfig.stoneBonus);
+            l = CalculateBonus(l, terrainConfig.livestockBonus);
+            h = CalculateBonus(h, terrainConfig.horseBonus);
+            c = CalculateBonus(c, terrainConfig.clothBonus);
+            le = CalculateBonus(le, terrainConfig.leatherBonus);
+            fo = CalculateBonus(fo, terrainConfig.forageBonus);
+            sa = CalculateBonus(sa, terrainConfig.saltBonus);
+            i = CalculateBonus(i, terrainConfig.ironBonus);
+            co = CalculateBonus(co, terrainConfig.copperBonus);
+            go = CalculateBonus(go, terrainConfig.goldOreBonus);
+            cl = CalculateBonus(cl, terrainConfig.clayBonus);
+
             rt.sizeDelta = new Vector2(size, size);
             img.sprite = sprite;
 
-            // 新增：给CityData赋值资源产出，CityData 赋值新增扩展资源 ...
-            CityData data = new CityData(); // 显式new + 类型
+            // CityData赋值（原有逻辑不变，只是值已包含地形加成）
+            CityData data = new CityData();
             data.go = city;
             data.type = type;
             data.localPos = localPos;
             data.rt = rt;
-            // 核心资源
+            // 核心资源（已加成）
             data.foodOut = f;
             data.goldOut = g;
             data.peopleOut = p;
             data.armyOut = a;
-            // 扩展资源
+            // 扩展资源（已加成）
             data.woodOut = w;
             data.stoneOut = s;
             data.livestockOut = l;
@@ -449,6 +503,15 @@ namespace Game.Game.Nation
 
             cityList.Add(data);
             if (type == CityType.Capital) currentCapital = data;
+        }
+        
+        // 4. 新增：计算加成的工具方法
+        private int CalculateBonus(int baseValue, int bonusPercent)
+        {
+            if (bonusPercent == 0) return baseValue;
+            // 计算百分比加成：基础值 + 基础值 * 加成百分比 / 100
+            float bonusValue = baseValue * (1 + bonusPercent / 100f);
+            return Mathf.Max(0, Mathf.RoundToInt(bonusValue)); // 确保结果非负
         }
 
         void MoveCapital()

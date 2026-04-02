@@ -9,12 +9,12 @@ namespace Game.Game.Terrain
     public static class MapTerrainChecker
     {
         // 地形类型枚举
-        public enum TerrainType
+        public enum MapTerrainType  
         {
-            Land, // 陆地（填充陆地处）
-            Sea, // 海洋（填充海洋处）
-            Coastal, // 沿海（陆地/海洋过渡区）
-            None // 未识别
+            None,
+            Plains,
+            Ocean,
+            Coastal
         }
 
         // 颜色相似度阈值（和填充系统保持一致，可微调）
@@ -27,35 +27,35 @@ namespace Game.Game.Terrain
         /// <param name="mapPos">地图内的像素坐标（从MapCanvasTransform.GetMousePosInCanvas获取）</param>
         /// <param name="landColor">陆地填充色</param>
         /// <param name="seaColor">海洋填充色</param>
-        public static TerrainType CheckTerrain(Texture2D mapTex, Vector2 mapPos, Color landColor, Color seaColor)
+        public static MapTerrainType CheckTerrain(Texture2D mapTex, Vector2 mapPos, Color landColor, Color seaColor)
         {
-            if (mapTex == null) return TerrainType.None;
+            if (mapTex == null) return MapTerrainType.None;
 
             // 边界校验
             int x = Mathf.RoundToInt(mapPos.x);
             int y = Mathf.RoundToInt(mapPos.y);
             if (x < 0 || x >= mapTex.width || y < 0 || y >= mapTex.height)
-                return TerrainType.None;
+                return MapTerrainType.None;
 
             // 获取当前像素颜色
             Color targetColor = mapTex.GetPixel(x, y);
 
             // 判断是否为海洋
             if (MapTextureUtility.IsColorSimilar(targetColor, seaColor, colorSimilarity))
-                return TerrainType.Sea;
+                return MapTerrainType.Ocean;
 
             // 判断是否为纯陆地
             if (MapTextureUtility.IsColorSimilar(targetColor, landColor, colorSimilarity))
             {
                 // 检测周围8邻域是否有海洋，有则为沿海
                 if (IsCoastal(x, y, mapTex, seaColor))
-                    return TerrainType.Coastal;
+                    return MapTerrainType.Coastal;
                 else
-                    return TerrainType.Land;
+                    return MapTerrainType.Plains;
             }
 
             // 其他情况（手绘轮廓、过渡区）默认按沿海处理
-            return TerrainType.Coastal;
+            return MapTerrainType.Coastal;
         }
 
         /// <summary>
@@ -80,13 +80,24 @@ namespace Game.Game.Terrain
 
             return false;
         }
+        
+        // MapTerrainChecker.cs 新增方法
+        /// <summary>
+        /// 获取指定坐标的细化地形类型（Ocean/Mountain/Plains等）
+        /// </summary>
+        public static TerrainConfig GetDetailedTerrain(Texture2D mapTex, Vector2 mapPos)
+        {
+            if (mapTex == null) return TerrainManager.Instance.GetTerrainConfig(TerrainType.Ocean);
+            return TerrainManager.Instance.GetTerrainAtPosition(mapTex, mapPos);
+        }
 
         /// <summary>
-        /// 设置颜色相似度阈值（和填充系统同步）
+        /// 简化判断：是否可建造城池（基于TerrainConfig的canBuildCity）
         /// </summary>
-        public static void SetSimilarityThreshold(float value)
+        public static bool CanBuildCityAtPosition(Texture2D mapTex, Vector2 mapPos)
         {
-            colorSimilarity = value;
+            var terrainConfig = GetDetailedTerrain(mapTex, mapPos);
+            return terrainConfig != null && terrainConfig.canBuildCity;
         }
     }
 }

@@ -89,12 +89,5 @@ namespace Game.UI.GameScene
 
             mapRectTransform.anchoredPosition = new Vector2(x, y);
         }
-
-        // 重置地图
-        public void ResetMapView()
-        {
-            mapRectTransform.localScale = Vector3.one;
-            mapRectTransform.anchoredPosition = Vector2.zero;
-        }
     }
 }
