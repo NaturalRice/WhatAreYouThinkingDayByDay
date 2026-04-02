@@ -220,34 +220,29 @@ namespace Game.Game.Nation
         {
             if (!readyToBuild) return;
             
-            // 港口特殊判断：必须在沿海
+            // 港口特殊判断：必须在沿海/沿河区域
             if (type == CityType.Port)
             {
                 Vector2 pixelPos = ConvertLocalPosToPixelPos(buildUIPos);
-        
-                // 🔥 修复这里！
-                var terrainType = MapTerrainChecker.CheckTerrain(
+                // 修复1：正确获取港口可建标记（从元组中解构）
+                var (_, _, canBuildPort) = MapTerrainChecker.CheckBasicTerrain(
                     MapGlobalData.savedMapTexture, 
-                    pixelPos, 
-                    MapGlobalData.landColor, 
-                    MapGlobalData.seaColor
+                    pixelPos
                 );
 
-                // 🔥 修复这里！
-                if (terrainType != MapTerrainChecker.MapTerrainType.Coastal)
+                // 修复2：判断是否为港口可建区域（取反判断）
+                if (!canBuildPort)
                 {
-                    Debug.Log("港口只能建在海边！");
+                    Debug.Log("港口只能建在海边/河边！");
                     panelCitySelect.SetActive(false);
                     return;
                 }
             }
-            
-            CreateCity(buildUIPos, type);
-            panelCitySelect.SetActive(false);
-            
+
+            // 修复3：先判断是否为陆地，再执行创建逻辑（原逻辑顺序错误）
             if (!IsLand(buildUIPos))
             {
-                Debug.Log("只能在陆地上建造");
+                Debug.Log("只能在陆地上建造！");
                 panelCitySelect.SetActive(false);
                 return;
             }
@@ -265,6 +260,7 @@ namespace Game.Game.Nation
                 CreateCity(buildUIPos, type);
             }
             
+            panelCitySelect.SetActive(false); // 原逻辑遗漏：创建后关闭面板
             readyToBuild = false;
             cdTimer = createCD;
         }
@@ -275,6 +271,14 @@ namespace Game.Game.Nation
             Vector2 pixelPos = ConvertLocalPosToPixelPos(localPos);
             // 复用MapTerrainChecker的可建造判断
             return MapTerrainChecker.CanBuildCityAtPosition(MapGlobalData.savedMapTexture, pixelPos);
+        }
+        
+        // 可选：补充领土扩张阻挡的判断逻辑（使用IsBlockTerritoryAtPosition）
+        public bool CanExpandTerritoryAtPosition(Vector2 localPos)
+        {
+            Vector2 pixelPos = ConvertLocalPosToPixelPos(localPos);
+            // 使用未被调用的IsBlockTerritoryAtPosition方法
+            return !MapTerrainChecker.IsBlockTerritoryAtPosition(MapGlobalData.savedMapTexture, pixelPos);
         }
         
         // 2. 新增：UI本地坐标转地图纹理像素坐标（抽离原有GetMapPixel中的坐标转换逻辑）
@@ -298,6 +302,13 @@ namespace Game.Game.Nation
             if (localPos.magnitude < 5f)
             {
                 Debug.Log("拒绝生成中心脏数据城池");
+                return;
+            }
+            
+            // 新增：检查领土扩张阻挡（可选逻辑）
+            if (!CanExpandTerritoryAtPosition(localPos))
+            {
+                Debug.Log($"该位置({localPos})地形阻挡领土扩张，无法建造城池！");
                 return;
             }
 
