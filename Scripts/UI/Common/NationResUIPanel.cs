@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 using Game.Game.Nation;
 using Game.Game.Terrain;
 using Game.Map;
@@ -29,10 +28,6 @@ namespace Game.UI.Common
         public ResourceItemExt itemGoldOre;
         public ResourceItemExt itemClay;
 
-        [Header("地形信息")]
-        public Text txtTerrainName;
-        public Text txtTerrainBonusSummary;
-
         [Header("下拉面板")]
         public GameObject panelExtended;
 
@@ -46,12 +41,6 @@ namespace Game.UI.Common
 
         void Update()
         {
-            /*if (!NationSettingPanel.isNationCreated || resManager == null || cityManager == null || terrainManager == null)
-            {
-                gameObject.SetActive(false);
-                return;
-            }*/
-
             gameObject.SetActive(true);
             UpdateSelectedCity();
 
@@ -63,29 +52,36 @@ namespace Game.UI.Common
 
         void UpdateSelectedCity()
         {
-            var cityList = cityManager.GetCityDataList();
-            if (cityList != null && cityList.Count > 0)
-            {
-                if (currentSelectedCity == null || currentSelectedCity.go == null)
-                {
-                    currentSelectedCity = cityList[0];
-                }
-            }
+            // 🔥 改为取点击的城市，不是默认第一个
+            currentSelectedCity = NationCityManager.currentSelectedCity;
         }
 
         void RefreshAll()
         {
-            TerrainConfig cfg = GetCurrentCityTerrainConfig();
+            // 🔥 从选中城市获取地形配置（不再依赖独立的地形文本）
+            TerrainConfig cfg = currentSelectedCity.terrainConfig;
             if (cfg == null)
             {
                 cfg = ScriptableObject.CreateInstance<TerrainConfig>();
                 cfg.terrainName = "未知地形";
+                // 兜底：无地形时加成设为0
+                cfg.foodBonus = 0;
+                cfg.goldBonus = 0;
+                cfg.woodBonus = 0;
+                cfg.stoneBonus = 0;
+                cfg.livestockBonus = 0;
+                cfg.horseBonus = 0;
+                cfg.clothBonus = 0;
+                cfg.leatherBonus = 0;
+                cfg.forageBonus = 0;
+                cfg.saltBonus = 0;
+                cfg.ironBonus = 0;
+                cfg.copperBonus = 0;
+                cfg.goldOreBonus = 0;
+                cfg.clayBonus = 0;
             }
 
-            RefreshTerrainInfo(cfg);
-
-            Game.Nation.CoreResOutput core = cityManager.GetCoreResOut();
-
+            // 核心资源刷新
             int fPerHour = Mathf.RoundToInt(currentSelectedCity.foodOut * 1200);
             int gPerHour = Mathf.RoundToInt(currentSelectedCity.goldOut * 1200);
             int pPerHour = Mathf.RoundToInt(currentSelectedCity.peopleOut * 1200);
@@ -98,8 +94,7 @@ namespace Game.UI.Common
 
             if (panelExtended != null && panelExtended.activeSelf)
             {
-                Game.Nation.ExtendResOutput ext = cityManager.GetExtendResOut();
-
+                // 扩展资源刷新
                 int wPerHour = Mathf.RoundToInt(currentSelectedCity.woodOut * 1200);
                 int sPerHour = Mathf.RoundToInt(currentSelectedCity.stoneOut * 1200);
                 int lPerHour = Mathf.RoundToInt(currentSelectedCity.livestockOut * 1200);
@@ -127,37 +122,6 @@ namespace Game.UI.Common
                 itemClay.SetValue(resManager.clay, currentSelectedCity.clayOut, clPerHour, cfg.clayBonus);
             }
         }
-
-        void RefreshTerrainInfo(TerrainConfig cfg)
-        {
-            if (txtTerrainName == null || txtTerrainBonusSummary == null) return;
-
-            txtTerrainName.text = $"当前地形：{cfg.terrainName}";
-            List<string> list = new List<string>();
-
-            if (cfg.foodBonus != 0) list.Add($"粮食{GetBonus(cfg.foodBonus)}");
-            if (cfg.goldBonus != 0) list.Add($"金币{GetBonus(cfg.goldBonus)}");
-            if (cfg.woodBonus != 0) list.Add($"木材{GetBonus(cfg.woodBonus)}");
-            if (cfg.stoneBonus != 0) list.Add($"石料{GetBonus(cfg.stoneBonus)}");
-            if (cfg.saltBonus != 0) list.Add($"盐矿{GetBonus(cfg.saltBonus)}");
-            if (cfg.ironBonus != 0) list.Add($"铁矿{GetBonus(cfg.ironBonus)}");
-            if (cfg.goldOreBonus != 0) list.Add($"金矿{GetBonus(cfg.goldOreBonus)}");
-            if (cfg.clayBonus != 0) list.Add($"黏土{GetBonus(cfg.clayBonus)}");
-
-            txtTerrainBonusSummary.text = list.Count > 0 ? $"加成：{string.Join("，", list)}" : "加成：无";
-        }
-
-        TerrainConfig GetCurrentCityTerrainConfig()
-        {
-            if (currentSelectedCity == null) return null;
-            if (MapGlobalData.savedMapTexture == null) return null;
-            if (terrainManager == null) return null;
-
-            Vector2 pixelPos = cityManager.ConvertLocalPosToPixelPos(currentSelectedCity.localPos);
-            return terrainManager.GetTerrainAtPosition(MapGlobalData.savedMapTexture, pixelPos);
-        }
-
-        string GetBonus(int p) => p > 0 ? $"+{p}%" : $"{p}%";
     }
 
     [System.Serializable]

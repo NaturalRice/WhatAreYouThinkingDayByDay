@@ -19,22 +19,15 @@ namespace Game.Game.Terrain
         {
             if (mapTex == null) return (false, false, false);
 
-            // 边界校验
             int x = Mathf.RoundToInt(mapPos.x);
             int y = Mathf.RoundToInt(mapPos.y);
             if (x < 0 || x >= mapTex.width || y < 0 || y >= mapTex.height)
                 return (false, false, false);
 
-            // 获取当前地形配置
-            TerrainConfig terrainConfig = GetDetailedTerrain(mapTex, mapPos);
-            if (terrainConfig == null) return (false, false, false);
-
-            // 基础地形判断（海洋/陆地）
-            bool isOcean = terrainConfig.terrainType == TerrainType.Ocean;
-            bool isLand = !isOcean && terrainConfig.terrainType != TerrainType.River; // 河流既非海洋也非陆地
-
-            // 港口可建区域：海洋/河流周边N邻域（可自定义邻域范围）
-            bool canBuildPort = IsNearOceanOrRiver(x, y, mapTex, checkRange: 1); // 1格邻域，可调整
+            TerrainConfig cfg = TerrainManager.Instance.GetTerrainAtPosition(mapTex, mapPos);
+            bool isOcean = cfg.terrainType == TerrainType.Ocean;
+            bool isLand = !isOcean && cfg.terrainType != TerrainType.River;
+            bool canBuildPort = IsNearOceanOrRiver(x, y, mapTex);
 
             return (isOcean, isLand, canBuildPort);
         }
@@ -43,26 +36,19 @@ namespace Game.Game.Terrain
         /// 检测指定坐标是否在海洋/河流周边（港口可建造区域）
         /// 替代原Coastal枚举的逻辑，支持河流+海洋双地形
         /// </summary>
-        public static bool IsNearOceanOrRiver(int x, int y, Texture2D mapTex, int checkRange = 1)
+        private static bool IsNearOceanOrRiver(int x, int y, Texture2D mapTex, int range = 2)
         {
-            // 遍历指定范围的邻域（默认8邻域，range=1）
-            for (int dx = -checkRange; dx <= checkRange; dx++)
+            for (int dx = -range; dx <= range; dx++)
             {
-                for (int dy = -checkRange; dy <= checkRange; dy++)
+                for (int dy = -range; dy <= range; dy++)
                 {
-                    if (dx == 0 && dy == 0) continue; // 跳过自身
+                    if (dx == 0 && dy == 0) continue;
+                    int cx = x + dx;
+                    int cy = y + dy;
+                    if (cx < 0 || cx >= mapTex.width || cy < 0 || cy >= mapTex.height) continue;
 
-                    int checkX = x + dx;
-                    int checkY = y + dy;
-                    if (checkX < 0 || checkX >= mapTex.width || checkY < 0 || checkY >= mapTex.height)
-                        continue;
-
-                    // 获取邻域地形
-                    TerrainConfig neighborTerrain = TerrainManager.Instance.GetTerrainAtPosition(mapTex, new Vector2(checkX, checkY));
-                    if (neighborTerrain == null) continue;
-
-                    // 海洋或河流则判定为港口可建区域
-                    if (neighborTerrain.terrainType == TerrainType.Ocean || neighborTerrain.terrainType == TerrainType.River)
+                    var cfg = TerrainManager.Instance.GetTerrainAtPosition(mapTex, new Vector2(cx, cy));
+                    if (cfg.terrainType == TerrainType.Ocean || cfg.terrainType == TerrainType.River)
                         return true;
                 }
             }
@@ -74,7 +60,6 @@ namespace Game.Game.Terrain
         /// </summary>
         public static TerrainConfig GetDetailedTerrain(Texture2D mapTex, Vector2 mapPos)
         {
-            if (mapTex == null) return TerrainManager.Instance.GetTerrainConfig(TerrainType.Ocean);
             return TerrainManager.Instance.GetTerrainAtPosition(mapTex, mapPos);
         }
 
@@ -83,9 +68,8 @@ namespace Game.Game.Terrain
         /// </summary>
         public static bool CanBuildCityAtPosition(Texture2D mapTex, Vector2 mapPos)
         {
-            var terrainConfig = GetDetailedTerrain(mapTex, mapPos);
-            // 核心判断：配置中的canBuildCity + 非海洋（双重保障）
-            return terrainConfig != null && terrainConfig.canBuildCity && terrainConfig.terrainType != TerrainType.Ocean;
+            var cfg = GetDetailedTerrain(mapTex, mapPos);
+            return cfg != null && cfg.canBuildCity;
         }
 
         /// <summary>

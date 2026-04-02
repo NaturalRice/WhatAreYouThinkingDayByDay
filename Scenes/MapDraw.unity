@@ -5328,7 +5328,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 587baef8c486e1d4cb0d395fe9cafd8a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  landColor: {r: 0.8, g: 0.7, b: 0.5, a: 1}
+  landColor: {r: 0.49803922, g: 0.8, b: 0.49803922, a: 1}
   seaColor: {r: 0.2, g: 0.5, b: 0.8, a: 1}
   fillSensitivity: 0.1
   fillClickLockDelay: 0.1

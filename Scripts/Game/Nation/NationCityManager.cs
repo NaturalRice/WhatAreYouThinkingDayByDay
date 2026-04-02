@@ -92,16 +92,16 @@ namespace Game.Game.Nation
             public GameObject go;
             public CityType type;
             public Vector2 localPos;
-
             public RectTransform rt;
+            
+            // 🔥 加这一行！！！
+            public TerrainConfig terrainConfig;
 
             // 核心资源产出
             public int foodOut;
             public int goldOut;
             public int peopleOut;
-
             public int armyOut;
-
             // 扩展资源产出
             public int woodOut;
             public int stoneOut;
@@ -296,6 +296,23 @@ namespace Game.Game.Nation
             return new Vector2(px, py);
         }
 
+        // ==================== 城市点击 ====================
+        public static CityData currentSelectedCity;
+        
+        void AddCityClickEvent(GameObject city, CityData data)
+        {
+            Button btn = city.GetComponent<Button>();
+            if (btn == null) btn = city.AddComponent<Button>();
+
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(() => 
+            {
+                currentSelectedCity = data;
+                CityInfoPanel.Instance.ShowPanel(data);
+                Debug.Log("✅ 城市已点击：" + data.type + " 地形：" + (data.terrainConfig != null ? data.terrainConfig.terrainName : "未设置"));
+            });
+        }
+        // ==================== 创建城市时绑定点击 ====================
         // 3. 重构CreateCity方法：新增地形加成计算
         void CreateCity(Vector2 localPos, CityType type)
         {
@@ -305,31 +322,30 @@ namespace Game.Game.Nation
                 return;
             }
             
-            // 新增：检查领土扩张阻挡（可选逻辑）
-            if (!CanExpandTerritoryAtPosition(localPos))
+            // 🔥 修复：先获取地形
+            Vector2 pixelPos = ConvertLocalPosToPixelPos(localPos);
+            TerrainConfig terrain = MapTerrainChecker.GetDetailedTerrain(MapGlobalData.savedMapTexture, pixelPos);
+
+            // 🔥 修复：地形不允许建城 → 直接阻止
+            if (terrain != null && !terrain.canBuildCity)
             {
-                Debug.Log($"该位置({localPos})地形阻挡领土扩张，无法建造城池！");
+                Debug.Log($"❌ 无法在【{terrain.terrainName}】上建造城市");
                 return;
             }
 
-            // ========== 新增：获取地形配置 ==========
-            Vector2 pixelPos = ConvertLocalPosToPixelPos(localPos);
-            TerrainConfig terrainConfig = MapTerrainChecker.GetDetailedTerrain(MapGlobalData.savedMapTexture, pixelPos);
-            if (terrainConfig == null) terrainConfig = TerrainManager.Instance.GetTerrainConfig(TerrainType.Plains); // 兜底默认平原
-
-            GameObject city = new GameObject($"City_{type}_{terrainConfig.terrainType}");
+            GameObject city = new GameObject($"City_{type}");
             city.transform.SetParent(mapRoot);
             city.transform.localPosition = localPos;
             city.transform.localScale = Vector3.one;
 
             Image img = city.AddComponent<Image>();
             img.color = Color.white;
-            img.raycastTarget = false;
+            img.raycastTarget = true;
 
             RectTransform rt = city.GetComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(30, 30);
 
             float size = sizeNormal;
             Sprite sprite = spriteNormal;
@@ -341,148 +357,34 @@ namespace Game.Game.Nation
 
             switch (type)
             {
-                case CityType.Town:
-                    size = sizeTown;
-                    sprite = spriteTown;
-                    f = (int)resTown.x;
-                    g = (int)resTown.y;
-                    p = (int)resTown.z;
-                    a = (int)resTown.w;
-                    w = resExtendTown.wood;
-                    s = resExtendTown.stone;
-                    l = resExtendTown.livestock;
-                    h = resExtendTown.horse;
-                    c = resExtendTown.cloth;
-                    le = resExtendTown.leather;
-                    fo = resExtendTown.forage;
-                    sa = resExtendTown.salt;
-                    i = resExtendTown.iron;
-                    co = resExtendTown.copper;
-                    go = resExtendTown.goldOre;
-                    cl = resExtendTown.clay;
-                    break;
-                case CityType.Normal:
-                    size = sizeNormal;
-                    sprite = spriteNormal;
-                    f = (int)resNormal.x;
-                    g = (int)resNormal.y;
-                    p = (int)resNormal.z;
-                    a = (int)resNormal.w;
-                    w = resExtendNormal.wood;
-                    s = resExtendNormal.stone;
-                    l = resExtendNormal.livestock;
-                    h = resExtendNormal.horse;
-                    c = resExtendNormal.cloth;
-                    le = resExtendNormal.leather;
-                    fo = resExtendNormal.forage;
-                    sa = resExtendNormal.salt;
-                    i = resExtendNormal.iron;
-                    co = resExtendNormal.copper;
-                    go = resExtendNormal.goldOre;
-                    cl = resExtendNormal.clay;
-                    break;
-                case CityType.Capital:
-                    size = sizeCapital;
-                    sprite = spriteCapital;
-                    f = (int)resCapital.x;
-                    g = (int)resCapital.y;
-                    p = (int)resCapital.z;
-                    a = (int)resCapital.w;
-                    w = resExtendCapital.wood;
-                    s = resExtendCapital.stone;
-                    l = resExtendCapital.livestock;
-                    h = resExtendCapital.horse;
-                    c = resExtendCapital.cloth;
-                    le = resExtendCapital.leather;
-                    fo = resExtendCapital.forage;
-                    sa = resExtendCapital.salt;
-                    i = resExtendCapital.iron;
-                    co = resExtendCapital.copper;
-                    go = resExtendCapital.goldOre;
-                    cl = resExtendCapital.clay;
-                    break;
-                case CityType.Farm:
-                    size = sizeFarm;
-                    sprite = spriteFarm;
-                    f = (int)resFarm.x;
-                    g = (int)resFarm.y;
-                    p = (int)resFarm.z;
-                    a = (int)resFarm.w;
-                    w = resExtendFarm.wood;
-                    s = resExtendFarm.stone;
-                    l = resExtendFarm.livestock;
-                    h = resExtendFarm.horse;
-                    c = resExtendFarm.cloth;
-                    le = resExtendFarm.leather;
-                    fo = resExtendFarm.forage;
-                    sa = resExtendFarm.salt;
-                    i = resExtendFarm.iron;
-                    co = resExtendFarm.copper;
-                    go = resExtendFarm.goldOre;
-                    cl = resExtendFarm.clay;
-                    break;
-                case CityType.Market:
-                    size = sizeMarket;
-                    sprite = spriteMarket;
-                    f = (int)resMarket.x;
-                    g = (int)resMarket.y;
-                    p = (int)resMarket.z;
-                    a = (int)resMarket.w;
-                    w = resExtendMarket.wood;
-                    s = resExtendMarket.stone;
-                    l = resExtendMarket.livestock;
-                    h = resExtendMarket.horse;
-                    c = resExtendMarket.cloth;
-                    le = resExtendMarket.leather;
-                    fo = resExtendMarket.forage;
-                    sa = resExtendMarket.salt;
-                    i = resExtendMarket.iron;
-                    co = resExtendMarket.copper;
-                    go = resExtendMarket.goldOre;
-                    cl = resExtendMarket.clay;
-                    break;
-                case CityType.Port:
-                    size = sizePort;
-                    sprite = spritePort;
-                    f = (int)resPort.x;
-                    g = (int)resPort.y;
-                    p = (int)resPort.z;
-                    a = (int)resPort.w;
-                    w = resExtendPort.wood;
-                    s = resExtendPort.stone;
-                    l = resExtendPort.livestock;
-                    h = resExtendPort.horse;
-                    c = resExtendPort.cloth;
-                    le = resExtendPort.leather;
-                    fo = resExtendPort.forage;
-                    sa = resExtendPort.salt;
-                    i = resExtendPort.iron;
-                    co = resExtendPort.copper;
-                    go = resExtendPort.goldOre;
-                    cl = resExtendPort.clay;
-                    break;
+                case CityType.Town: size = sizeTown; sprite = spriteTown; f = (int)resTown.x; g = (int)resTown.y; p = (int)resTown.z; a = (int)resTown.w; w = resExtendTown.wood; s = resExtendTown.stone; l = resExtendTown.livestock; h = resExtendTown.horse; c = resExtendTown.cloth; le = resExtendTown.leather; fo = resExtendTown.forage; sa = resExtendTown.salt; i = resExtendTown.iron; co = resExtendTown.copper; go = resExtendTown.goldOre; cl = resExtendTown.clay; break;
+                case CityType.Normal: size = sizeNormal; sprite = spriteNormal; f = (int)resNormal.x; g = (int)resNormal.y; p = (int)resNormal.z; a = (int)resNormal.w; w = resExtendNormal.wood; s = resExtendNormal.stone; l = resExtendNormal.livestock; h = resExtendNormal.horse; c = resExtendNormal.cloth; le = resExtendNormal.leather; fo = resExtendNormal.forage; sa = resExtendNormal.salt; i = resExtendNormal.iron; co = resExtendNormal.copper; go = resExtendNormal.goldOre; cl = resExtendNormal.clay; break;
+                case CityType.Capital: size = sizeCapital; sprite = spriteCapital; f = (int)resCapital.x; g = (int)resCapital.y; p = (int)resCapital.z; a = (int)resCapital.w; w = resExtendCapital.wood; s = resExtendCapital.stone; l = resExtendCapital.livestock; h = resExtendCapital.horse; c = resExtendCapital.cloth; le = resExtendCapital.leather; fo = resExtendCapital.forage; sa = resExtendCapital.salt; i = resExtendCapital.iron; co = resExtendCapital.copper; go = resExtendCapital.goldOre; cl = resExtendCapital.clay; break;
+                case CityType.Farm: size = sizeFarm; sprite = spriteFarm; f = (int)resFarm.x; g = (int)resFarm.y; p = (int)resFarm.z; a = (int)resFarm.w; w = resExtendFarm.wood; s = resExtendFarm.stone; l = resExtendFarm.livestock; h = resExtendFarm.horse; c = resExtendFarm.cloth; le = resExtendFarm.leather; fo = resExtendFarm.forage; sa = resExtendFarm.salt; i = resExtendFarm.iron; co = resExtendFarm.copper; go = resExtendFarm.goldOre; cl = resExtendFarm.clay; break;
+                case CityType.Market: size = sizeMarket; sprite = spriteMarket; f = (int)resMarket.x; g = (int)resMarket.y; p = (int)resMarket.z; a = (int)resMarket.w; w = resExtendMarket.wood; s = resExtendMarket.stone; l = resExtendMarket.livestock; h = resExtendMarket.horse; c = resExtendMarket.cloth; le = resExtendMarket.leather; fo = resExtendMarket.forage; sa = resExtendMarket.salt; i = resExtendMarket.iron; co = resExtendMarket.copper; go = resExtendMarket.goldOre; cl = resExtendMarket.clay; break;
+                case CityType.Port: size = sizePort; sprite = spritePort; f = (int)resPort.x; g = (int)resPort.y; p = (int)resPort.z; a = (int)resPort.w; w = resExtendPort.wood; s = resExtendPort.stone; l = resExtendPort.livestock; h = resExtendPort.horse; c = resExtendPort.cloth; le = resExtendPort.leather; fo = resExtendPort.forage; sa = resExtendPort.salt; i = resExtendPort.iron; co = resExtendPort.copper; go = resExtendPort.goldOre; cl = resExtendPort.clay; break;
             }
 
             // ========== 新增：应用地形资源加成 ==========
             // 核心资源加成
-            f = CalculateBonus(f, terrainConfig.foodBonus);
-            g = CalculateBonus(g, terrainConfig.goldBonus);
-            p = CalculateBonus(p, terrainConfig.goldBonus); // 人口暂用金币加成（可自定义）
-            a = CalculateBonus(a, terrainConfig.goldBonus); // 军队暂用金币加成（可自定义）
+            f = CalculateBonus(f, terrain.foodBonus);
+            g = CalculateBonus(g, terrain.goldBonus);
+            p = CalculateBonus(p, terrain.goldBonus); // 人口暂用金币加成（可自定义）
+            a = CalculateBonus(a, terrain.goldBonus); // 军队暂用金币加成（可自定义）
             
             // 扩展资源加成
-            w = CalculateBonus(w, terrainConfig.woodBonus);
-            s = CalculateBonus(s, terrainConfig.stoneBonus);
-            l = CalculateBonus(l, terrainConfig.livestockBonus);
-            h = CalculateBonus(h, terrainConfig.horseBonus);
-            c = CalculateBonus(c, terrainConfig.clothBonus);
-            le = CalculateBonus(le, terrainConfig.leatherBonus);
-            fo = CalculateBonus(fo, terrainConfig.forageBonus);
-            sa = CalculateBonus(sa, terrainConfig.saltBonus);
-            i = CalculateBonus(i, terrainConfig.ironBonus);
-            co = CalculateBonus(co, terrainConfig.copperBonus);
-            go = CalculateBonus(go, terrainConfig.goldOreBonus);
-            cl = CalculateBonus(cl, terrainConfig.clayBonus);
+            w = CalculateBonus(w, terrain.woodBonus);
+            s = CalculateBonus(s, terrain.stoneBonus);
+            l = CalculateBonus(l, terrain.livestockBonus);
+            h = CalculateBonus(h, terrain.horseBonus);
+            c = CalculateBonus(c, terrain.clothBonus);
+            le = CalculateBonus(le, terrain.leatherBonus);
+            fo = CalculateBonus(fo, terrain.forageBonus);
+            sa = CalculateBonus(sa, terrain.saltBonus);
+            i = CalculateBonus(i, terrain.ironBonus);
+            co = CalculateBonus(co, terrain.copperBonus);
+            go = CalculateBonus(go, terrain.goldOreBonus);
+            cl = CalculateBonus(cl, terrain.clayBonus);
 
             rt.sizeDelta = new Vector2(size, size);
             img.sprite = sprite;
@@ -493,6 +395,9 @@ namespace Game.Game.Nation
             data.type = type;
             data.localPos = localPos;
             data.rt = rt;
+            // 🔥 关键修复：赋值地形配置
+            data.terrainConfig = terrain; 
+            
             // 核心资源（已加成）
             data.foodOut = f;
             data.goldOut = g;
@@ -514,6 +419,9 @@ namespace Game.Game.Nation
 
             cityList.Add(data);
             if (type == CityType.Capital) currentCapital = data;
+            
+            // 🔥 新增：给城市添加点击事件
+            AddCityClickEvent(city, data);
         }
         
         // 4. 新增：计算加成的工具方法
