@@ -1,12 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using Game.Core.GameEntry;
 using Game.Game.Terrain; 
 using Game.Map;
+using Game.UI.Common;
 
 namespace Game.Game.Nation
 {
-    public class NationCityManager : MonoBehaviour
+    public class NationCityManager : GameManager
     {
         [Header("城池图标")] public Sprite spriteTown;
         public Sprite spriteNormal;
@@ -65,16 +67,6 @@ namespace Game.Game.Nation
         // 地图纹理（需和绘制地形的纹理一致）
         public Texture2D mapTexture;
 
-        public enum CityType
-        {
-            Town,
-            Normal,
-            Capital,
-            Farm,
-            Market,
-            Port
-        }
-
         private CityType buildType;
         private bool canBuildCity;
         private float cdTimer;
@@ -82,40 +74,10 @@ namespace Game.Game.Nation
         private float lastClickTime;
         private float doubleClickTime = 0.25f;
 
-        private List<CityData> cityList = new List<CityData>();
+        public List<CityData> cityList = new List<CityData>();
         private CityData currentCapital;
+        
         private Vector2 buildUIPos;
-
-        [System.Serializable]
-        public class CityData
-        {
-            public GameObject go;
-            public CityType type;
-            public Vector2 localPos;
-            public RectTransform rt;
-            
-            // 🔥 加这一行！！！
-            public TerrainConfig terrainConfig;
-
-            // 核心资源产出
-            public int foodOut;
-            public int goldOut;
-            public int peopleOut;
-            public int armyOut;
-            // 扩展资源产出
-            public int woodOut;
-            public int stoneOut;
-            public int livestockOut;
-            public int horseOut;
-            public int clothOut;
-            public int leatherOut;
-            public int forageOut;
-            public int saltOut;
-            public int ironOut;
-            public int copperOut;
-            public int goldOreOut;
-            public int clayOut;
-        }
 
         // 自定义Vector12（存储12种扩展资源）
         [System.Serializable]
@@ -297,7 +259,8 @@ namespace Game.Game.Nation
         }
 
         // ==================== 城市点击 ====================
-        public static CityData currentSelectedCity;
+        // 移除静态 currentSelectedCity，改为实例属性
+        public CityData currentSelectedCity { get; private set; }
         
         void AddCityClickEvent(GameObject city, CityData data)
         {
@@ -312,7 +275,18 @@ namespace Game.Game.Nation
                 Debug.Log("✅ 城市已点击：" + data.type + " 地形：" + (data.terrainConfig != null ? data.terrainConfig.terrainName : "未设置"));
             });
         }
+        
         // ==================== 创建城市时绑定点击 ====================
+        
+        // 城市选中事件
+        void UpdateSelectedCity(CityData data)
+        {
+            currentSelectedCity = data;
+            // 触发全局事件，通知所有订阅者（UI面板）刷新
+            EventManager.OnCitySelected?.Invoke();
+            Debug.Log($"[CityManager] 选中城市：{data.type}，地形：{data.terrainConfig?.terrainName}");
+        }
+        
         // 3. 重构CreateCity方法：新增地形加成计算
         void CreateCity(Vector2 localPos, CityType type)
         {
@@ -323,8 +297,10 @@ namespace Game.Game.Nation
             }
             
             // 🔥 修复：先获取地形
-            Vector2 pixelPos = ConvertLocalPosToPixelPos(localPos);
-            TerrainConfig terrain = MapTerrainChecker.GetDetailedTerrain(MapGlobalData.savedMapTexture, pixelPos);
+            TerrainConfig terrain = MapTerrainChecker.GetDetailedTerrain(
+                MapGlobalData.savedMapTexture, 
+                ConvertLocalPosToPixelPos(localPos)
+            );
 
             // 🔥 修复：地形不允许建城 → 直接阻止
             if (terrain != null && !terrain.canBuildCity)

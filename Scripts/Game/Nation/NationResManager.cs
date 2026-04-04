@@ -3,8 +3,102 @@ using System.Collections.Generic;
 
 namespace Game.Game.Nation
 {
-    public class NationResManager : MonoBehaviour
+    // 城市资源类（基类落地）
+    [System.Serializable]
+    public class CityResource
     {
+        public string cityName;
+        // 各资源的基础产量（每轮增长值）
+        public Dictionary<ResourceType, int> resourceGrowth = new Dictionary<ResourceType, int>();
+        // 各资源当前数量
+        public Dictionary<ResourceType, int> currentResource = new Dictionary<ResourceType, int>();
+
+        // 增长当前城市资源
+        public void GrowResource()
+        {
+            foreach (var type in resourceGrowth.Keys)
+            {
+                currentResource[type] += resourceGrowth[type];
+            }
+        }
+    }
+    
+    public class NationResManager : BaseResSystem
+    {
+        // 所有城市的资源数据
+        public List<CityResource> allCityResources = new List<CityResource>();
+        // 全局资源总和（供UI显示）
+        public Dictionary<ResourceType, int> totalResources = new Dictionary<ResourceType, int>();
+        
+        // 初始化资源字典
+        public override void Init()
+        {
+            // 初始化总和字典
+            foreach (ResourceType type in System.Enum.GetValues(typeof(ResourceType)))
+            {
+                if (!totalResources.ContainsKey(type))
+                {
+                    totalResources[type] = 0;
+                }
+            }
+
+            // 初始化城市资源（示例：给每个城市默认产量）
+            foreach (var cityRes in allCityResources)
+            {
+                foreach (ResourceType type in System.Enum.GetValues(typeof(ResourceType)))
+                {
+                    if (!cityRes.resourceGrowth.ContainsKey(type))
+                    {
+                        cityRes.resourceGrowth[type] = 10; // 默认每轮增长10
+                    }
+
+                    if (!cityRes.currentResource.ContainsKey(type))
+                    {
+                        cityRes.currentResource[type] = 0;
+                    }
+                }
+            }
+
+            // 首次计算总和
+            CalculateTotalResources();
+        }
+        
+        // 增长所有城市的资源
+        public void GrowAllCityResources()
+        {
+            base.GrowAllCityResources(); // 调用基类逻辑
+            
+            foreach (var cityRes in allCityResources)
+            {
+                cityRes.GrowResource();
+            }
+        }
+
+        // 计算所有城市资源总和（供UI刷新）
+        public override void CalculateTotalResources()
+        {
+            // 重置总和
+            foreach (var type in totalResources.Keys)
+            {
+                totalResources[type] = 0;
+            }
+            // 累加所有城市资源
+            foreach (var cityRes in allCityResources)
+            {
+                foreach (var type in totalResources.Keys)
+                {
+                    totalResources[type] += cityRes.currentResource[type];
+                }
+            }
+
+            // 示例：打印总和（实际项目中替换为UI刷新逻辑）
+            foreach (var kvp in totalResources)
+            {
+                Debug.Log($"总资源 {kvp.Key} : {kvp.Value}");
+            }
+        }
+
+
         public static NationResManager Instance;
 
         [Header("核心资源（默认显示）")] public int food;

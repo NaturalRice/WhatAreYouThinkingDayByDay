@@ -33,11 +33,14 @@ namespace Game.UI.Common
 
         [Header("引用")]
         public NationResManager resManager;
-        public NationCityManager cityManager;
+        public NationCityManager cityManager = new NationCityManager();
         public TerrainManager terrainManager;
 
         private const float ResSettleCycle = 3f;
-        private NationCityManager.CityData currentSelectedCity;
+        private CityData currentSelectedCity;
+        
+        private bool isSubscribed = false;
+
 
         void Update()
         {
@@ -53,7 +56,7 @@ namespace Game.UI.Common
         void UpdateSelectedCity()
         {
             // 🔥 改为取点击的城市，不是默认第一个
-            currentSelectedCity = NationCityManager.currentSelectedCity;
+            currentSelectedCity = cityManager.currentSelectedCity;
         }
 
         void RefreshAll()

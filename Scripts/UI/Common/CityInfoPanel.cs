@@ -2,68 +2,71 @@ using UnityEngine;
 using UnityEngine.UI;
 using Game.Game.Nation;
 
-public class CityInfoPanel : MonoBehaviour
+namespace Game.UI.Common
 {
-    public static CityInfoPanel Instance;
-
-    public GameObject panelRoot;
-    public Text txtCityName;
-    public Text txtTerrainName;
-    public Text txtTerrainBonus;
-
-    private NationCityManager.CityData currentCity;
-
-    void Awake()
+    public class CityInfoPanel : MonoBehaviour
     {
-        Instance = this;
-        panelRoot.SetActive(false);
-    }
+        public static CityInfoPanel Instance;
 
-    void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
+        public GameObject panelRoot;
+        public Text txtCityName;
+        public Text txtTerrainName;
+        public Text txtTerrainBonus;
+
+        private CityData currentCity;
+
+        void Awake()
         {
-            if (currentCity != null && 
-                !RectTransformUtility.RectangleContainsScreenPoint(
-                    panelRoot.GetComponent<RectTransform>(), 
-                    Input.mousePosition, 
-                    null))
+            Instance = this;
+            panelRoot.SetActive(false);
+        }
+
+        void Update()
+        {
+            if (Input.GetMouseButtonDown(0))
             {
-                HidePanel();
+                if (currentCity != null &&
+                    !RectTransformUtility.RectangleContainsScreenPoint(
+                        panelRoot.GetComponent<RectTransform>(),
+                        Input.mousePosition,
+                        null))
+                {
+                    HidePanel();
+                }
             }
         }
-    }
 
-    public void ShowPanel(NationCityManager.CityData data)
-    {
-        if (data == null) return;
-
-        currentCity = data;
-        panelRoot.SetActive(true);
-        transform.position = Input.mousePosition + new Vector3(0, 60, 0);
-
-        txtCityName.text = "城市：" + data.type;
-
-        if (data.terrainConfig != null)
+        public void ShowPanel(CityData data)
         {
-            txtTerrainName.text = "地形：" + data.terrainConfig.terrainName;
+            if (data == null) return;
 
-            string bonus = "";
-            if (data.terrainConfig.foodBonus != 0) bonus += $"粮食{data.terrainConfig.foodBonus:+#;-#;0}% ";
-            if (data.terrainConfig.goldOreBonus != 0) bonus += $"金矿{data.terrainConfig.goldOreBonus:+#;-#;0}% ";
-            if (data.terrainConfig.woodBonus != 0) bonus += $"木材{data.terrainConfig.woodBonus:+#;-#;0}% ";
-            txtTerrainBonus.text = bonus == "" ? "无加成" : bonus;
+            currentCity = data;
+            panelRoot.SetActive(true);
+            transform.position = Input.mousePosition + new Vector3(0, 60, 0);
+
+            txtCityName.text = "城市：" + data.type;
+
+            if (data.terrainConfig != null)
+            {
+                txtTerrainName.text = "地形：" + data.terrainConfig.terrainName;
+
+                string bonus = "";
+                if (data.terrainConfig.foodBonus != 0) bonus += $"粮食{data.terrainConfig.foodBonus:+#;-#;0}% ";
+                if (data.terrainConfig.goldOreBonus != 0) bonus += $"金矿{data.terrainConfig.goldOreBonus:+#;-#;0}% ";
+                if (data.terrainConfig.woodBonus != 0) bonus += $"木材{data.terrainConfig.woodBonus:+#;-#;0}% ";
+                txtTerrainBonus.text = bonus == "" ? "无加成" : bonus;
+            }
+            else
+            {
+                txtTerrainName.text = "地形：未知";
+                txtTerrainBonus.text = "无加成";
+            }
         }
-        else
+
+        public void HidePanel()
         {
-            txtTerrainName.text = "地形：未知";
-            txtTerrainBonus.text = "无加成";
+            panelRoot.SetActive(false);
+            currentCity = null;
         }
-    }
-
-    public void HidePanel()
-    {
-        panelRoot.SetActive(false);
-        currentCity = null;
     }
 }

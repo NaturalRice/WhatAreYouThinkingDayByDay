@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Game.Core
+namespace Game.Core.Base
 {
     public class ManagerBase<T> : MonoBehaviour where T : ManagerBase<T>
     {

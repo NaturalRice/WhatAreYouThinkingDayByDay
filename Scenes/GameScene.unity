@@ -6846,12 +6846,12 @@ MonoBehaviour:
   resExtendTown:
     wood: 1
     stone: 1
-    livestock: 1
-    horse: 0
+    livestock: 3
+    horse: 3
     cloth: 0
     leather: 0
-    forage: 1
-    salt: 0
+    forage: 3
+    salt: 3
     iron: 0
     copper: 0
     goldOre: 0
@@ -6861,11 +6861,11 @@ MonoBehaviour:
     stone: 2
     livestock: 1
     horse: 0
-    cloth: 1
-    leather: 1
-    forage: 2
+    cloth: 5
+    leather: 5
+    forage: 0
     salt: 0
-    iron: 0
+    iron: 1
     copper: 1
     goldOre: 0
     clay: 1
@@ -6883,18 +6883,18 @@ MonoBehaviour:
     goldOre: 1
     clay: 2
   resExtendFarm:
-    wood: 4
-    stone: 1
+    wood: 5
+    stone: 5
     livestock: 5
-    horse: 0
-    cloth: 0
-    leather: 0
+    horse: 5
+    cloth: 1
+    leather: 5
     forage: 6
     salt: 0
     iron: 0
     copper: 0
     goldOre: 0
-    clay: 1
+    clay: 0
   resExtendMarket:
     wood: 1
     stone: 1
@@ -6916,9 +6916,9 @@ MonoBehaviour:
     cloth: 1
     leather: 1
     forage: 1
-    salt: 2
+    salt: 10
     iron: 0
-    copper: 0
+    copper: 5
     goldOre: 0
     clay: 1
   createCD: 3
@@ -6934,6 +6934,7 @@ MonoBehaviour:
   textCapital: {fileID: 927887801}
   panelOffsetY: 80
   mapTexture: {fileID: 0}
+  cityList: []
 --- !u!114 &996595760
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12719,6 +12720,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1637227793}
   - component: {fileID: 1637227792}
+  - component: {fileID: 1637227794}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -12738,22 +12740,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1037b5658d51ee74fb2bcb9453f7d568, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  food: 0
-  gold: 0
-  people: 0
-  army: 0
-  wood: 0
-  stone: 0
-  livestock: 0
-  horse: 0
-  cloth: 0
-  leather: 0
-  forage: 0
-  salt: 0
-  iron: 0
-  copper: 0
-  goldOre: 0
-  clay: 0
+  food: 5
+  gold: 5
+  people: 5
+  army: 5
+  wood: 5
+  stone: 5
+  livestock: 5
+  horse: 5
+  cloth: 5
+  leather: 5
+  forage: 5
+  salt: 5
+  iron: 1
+  copper: 1
+  goldOre: 1
+  clay: 1
   resUpdateTime: 3
   resConfigs: []
   cityManager: {fileID: 996595759}
@@ -12771,6 +12773,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1637227794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1637227791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08abe7934848b154ba26bd5701b9678a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  terrainManager: {fileID: 1703380063}
+  cityManager: {fileID: 996595759}
+  resManager: {fileID: 1637227792}
+  territoryManager: {fileID: 996595760}
 --- !u!1 &1637599759
 GameObject:
   m_ObjectHideFlags: 0
