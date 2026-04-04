@@ -1,3 +1,4 @@
+using Game.Core.Base;
 using UnityEngine;
 using UnityEngine.UI;
 using Game.Game.Nation;
@@ -6,7 +7,7 @@ using Game.Map;
 
 namespace Game.UI.Common
 {
-    public class NationResUIPanel : MonoBehaviour
+    public class NationResUIPanel : BasePanel
     {
         [Header("核心资源")]
         public ResourceItemExt itemFood;

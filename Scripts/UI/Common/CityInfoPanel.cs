@@ -1,10 +1,11 @@
+using Game.Core.Base;
 using UnityEngine;
 using UnityEngine.UI;
 using Game.Game.Nation;
 
 namespace Game.UI.Common
 {
-    public class CityInfoPanel : MonoBehaviour
+    public class CityInfoPanel : BasePanel
     {
         public static CityInfoPanel Instance;
 

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Game.Core.Base;
 
 namespace Game.Game.Nation
 {
@@ -23,7 +24,7 @@ namespace Game.Game.Nation
         }
     }
     
-    public class NationResManager : BaseResSystem
+    public class NationResManager : BaseManager
     {
         // 所有城市的资源数据
         public List<CityResource> allCityResources = new List<CityResource>();
@@ -31,7 +32,7 @@ namespace Game.Game.Nation
         public Dictionary<ResourceType, int> totalResources = new Dictionary<ResourceType, int>();
         
         // 初始化资源字典
-        public override void Init()
+        public void Init()
         {
             // 初始化总和字典
             foreach (ResourceType type in System.Enum.GetValues(typeof(ResourceType)))
@@ -75,7 +76,7 @@ namespace Game.Game.Nation
         }
 
         // 计算所有城市资源总和（供UI刷新）
-        public override void CalculateTotalResources()
+        public void CalculateTotalResources()
         {
             // 重置总和
             foreach (var type in totalResources.Keys)

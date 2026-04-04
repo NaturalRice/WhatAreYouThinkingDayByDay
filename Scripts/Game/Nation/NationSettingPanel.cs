@@ -1,9 +1,10 @@
+using Game.Core.Base;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Game.Game.Nation
 {
-    public class NationSettingPanel : MonoBehaviour
+    public class NationSettingPanel : BasePanel
     {
         [Header("UI 绑定")] public InputField inputNationName;
         public Dropdown dropdownGovernment;

@@ -2,11 +2,12 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Game.Core.Base;
 using UnityEngine.UI;
 
 namespace Game.Map
 {
-    public class MapHistoryManager : MonoBehaviour
+    public class MapHistoryManager : BaseManager
     {
         [Header("历史配置")] public int maxHistoryCount = 20;
         public float saveThrottle = 0.2f;

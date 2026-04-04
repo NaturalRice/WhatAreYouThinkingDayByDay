@@ -1,9 +1,10 @@
+using Game.Core.Base;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Game.UI.Common
 {
-    public class ResDropdownControl : MonoBehaviour
+    public class ResDropdownControl : BasePanel
     {
         public Button btnDropdown;
         public GameObject panelExtended;

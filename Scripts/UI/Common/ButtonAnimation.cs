@@ -1,3 +1,4 @@
+using Game.Core.Base;
 using Game.Map;
 using Game.UI.MainMenu;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine.EventSystems;
 
 namespace Game.UI.Common
 {
-    public class ButtonAnimation : MonoBehaviour
+    public class ButtonAnimation : BasePanel
     {
         private UIMainMenu mainMenu;
         private MapDrawUINavigator mapNav;

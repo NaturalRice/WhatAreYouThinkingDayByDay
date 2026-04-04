@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using Game.Core.Base;
 using UnityEngine;
 
 namespace Game.Game.Terrain
 {
-    public class TerrainManager : MonoBehaviour
+    public class TerrainManager : BaseManager
     {
         public static TerrainManager Instance;
 

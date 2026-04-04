@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
+using Game.Core.Base;
 using Random = UnityEngine.Random;
 
 /// <summary>
@@ -9,7 +10,7 @@ using Random = UnityEngine.Random;
 /// </summary>
 namespace Game.Map
 {
-    public class MapIOManager : MonoBehaviour
+    public class MapIOManager : BaseManager
     {
         [Header("IO按钮引用")] public Button loadImageBtn; // 导入图片按钮
         public Button saveMapBtn; // 保存地图按钮

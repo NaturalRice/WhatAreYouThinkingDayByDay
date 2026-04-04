@@ -1,8 +1,9 @@
+using Game.Core.Base;
 using UnityEngine;
 
 namespace Game.UI.GameScene
 {
-    public class MapViewerController : MonoBehaviour
+    public class MapViewerController : BasePanel
     {
         [Header("核心设置")] public RectTransform mapRectTransform; // 拖入 RawImage_Map
         public RectTransform viewportRect; // 拖入 Panel_GameBg

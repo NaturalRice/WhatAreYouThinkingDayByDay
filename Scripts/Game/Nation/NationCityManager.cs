@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using Game.Core.Base;
 using Game.Core.GameEntry;
 using Game.Game.Terrain; 
 using Game.Map;
@@ -8,7 +9,7 @@ using Game.UI.Common;
 
 namespace Game.Game.Nation
 {
-    public class NationCityManager : GameManager
+    public class NationCityManager : BaseManager
     {
         [Header("城池图标")] public Sprite spriteTown;
         public Sprite spriteNormal;

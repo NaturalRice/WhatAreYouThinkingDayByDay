@@ -1,12 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using Game.Core.Base;
 using Game.Map;
 using static Game.Game.Nation.NationCityManager;
 
 namespace Game.Game.Nation
 {
-    public class NationTerritoryManager : MonoBehaviour
+    public class NationTerritoryManager : BaseManager
     {
         [Header("核心")] public RectTransform mapRoot;
         public NationCityManager cityManager;

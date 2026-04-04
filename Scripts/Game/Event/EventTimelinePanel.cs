@@ -1,10 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using Game.Core.Base;
 
 namespace Game.Game.Event
 {
-    public class EventTimelinePanel : MonoBehaviour
+    public class EventTimelinePanel : BasePanel
     {
         [Header("UI 绑定")] public Button btnAddEvent;
         public Button btnConfirm;

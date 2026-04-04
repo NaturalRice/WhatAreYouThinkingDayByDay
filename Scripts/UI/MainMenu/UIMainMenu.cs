@@ -1,10 +1,11 @@
+using Game.Core.Base;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 namespace Game.UI.MainMenu
 {
-    public class UIMainMenu : MonoBehaviour
+    public class UIMainMenu : BasePanel
     {
         [Header("按钮")] public Button btnStart;
         public Button btnHelp;

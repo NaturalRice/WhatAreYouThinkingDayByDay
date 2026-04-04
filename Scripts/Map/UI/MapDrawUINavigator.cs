@@ -1,10 +1,11 @@
+using Game.Core.Base;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 namespace Game.Map
 {
-    public class MapDrawUINavigator : MonoBehaviour
+    public class MapDrawUINavigator : BasePanel
     {
         [Header("按钮")] public Button btnBack;
         public Button btnContinue;

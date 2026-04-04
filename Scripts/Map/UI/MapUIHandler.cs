@@ -1,3 +1,4 @@
+using Game.Core.Base;
 using UnityEngine;
 using UnityEngine.UI;
 using Game.Game.Terrain;
@@ -7,7 +8,7 @@ using Game.Game.Terrain;
 /// </summary>
 namespace Game.Map
 {
-    public class MapUIHandler : MonoBehaviour
+    public class MapUIHandler : BasePanel
     {
         [Header("核心UI引用")] public Button penBtn; // 画笔按钮
         public Button eraserBtn; // 橡皮按钮

@@ -1,3 +1,4 @@
+using Game.Core.Base;
 using Game.Game.Event;
 using Game.Game.Nation;
 using Game.Map;
@@ -7,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 namespace Game.UI.GameScene
 {
-    public class GameSceneUIManager : MonoBehaviour
+    public class GameSceneUIManager : BasePanel
     {
         [Header("场景按钮")] public Button btnBackToEditor;
         public Button btnSaveWorld; // 保存世界按钮

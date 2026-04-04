@@ -9,9 +9,9 @@ namespace Game.Core.GameEntry
     {
         // 声明为可序列化字段，允许在Inspector赋值
         [Header("核心管理器")]
-        [SerializeField] private TerrainManager _terrainManager;
-        [SerializeField] private NationCityManager _nationCityManager;
-        [SerializeField] private NationResManager _nationResManager;
+        public TerrainManager terrainManager;
+        public NationCityManager cityManager;
+        public NationResManager resManager;
 
         // 对外提供只读访问
         public static TerrainManager TerrainManager { get; private set; }
@@ -27,32 +27,9 @@ namespace Game.Core.GameEntry
 
         private void InitializeSystems()
         {
-            // 赋值单例+空值校验
-            TerrainManager = _terrainManager;
-            if (TerrainManager == null)
-            {
-                Debug.LogError("[GameManager] TerrainManager 未赋值！");
-                return;
-            }
-
-            NationCityManager = _nationCityManager;
-            if (NationCityManager == null)
-            {
-                Debug.LogError("[GameManager] NationCityManager 未赋值！");
-                return;
-            }
-
-            NationResManager = _nationResManager;
-            if (NationResManager == null)
-            {
-                Debug.LogError("[GameManager] NationResManager 未赋值！");
-                return;
-            }
-
-            // 初始化各管理器
-            //TerrainManager.Init();
-            //NationCityManager.Init();
-            NationResManager.Init();
+            if (terrainManager != null) terrainManager.Init();
+            if (cityManager != null) cityManager.Init();
+            if (resManager != null) resManager.Init();
         }
 
         // 资源定时增长协程（示例：每5秒增长一次）

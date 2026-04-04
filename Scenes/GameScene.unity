@@ -12740,6 +12740,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1037b5658d51ee74fb2bcb9453f7d568, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allCityResources: []
   food: 5
   gold: 5
   people: 5
@@ -12785,10 +12786,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08abe7934848b154ba26bd5701b9678a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  terrainManager: {fileID: 1703380063}
-  cityManager: {fileID: 996595759}
-  resManager: {fileID: 1637227792}
-  territoryManager: {fileID: 996595760}
+  _terrainManager: {fileID: 1703380063}
+  _nationCityManager: {fileID: 996595759}
+  _nationResManager: {fileID: 1637227792}
 --- !u!1 &1637599759
 GameObject:
   m_ObjectHideFlags: 0

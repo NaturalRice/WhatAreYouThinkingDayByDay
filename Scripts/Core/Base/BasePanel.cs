@@ -7,18 +7,10 @@ namespace Game.Core.Base
     public abstract class BasePanel : MonoBehaviour
     {
         // 面板显示
-        public virtual void Show()
-        {
-            gameObject.SetActive(true);
-            OnShow();
-        }
+        public virtual void Show() => gameObject.SetActive(true);
 
         // 面板隐藏
-        public virtual void Hide()
-        {
-            gameObject.SetActive(false);
-            OnHide();
-        }
+        public virtual void Hide() => gameObject.SetActive(false);
 
         // 面板初始化（仅调用一次）
         public virtual void Init() { }
