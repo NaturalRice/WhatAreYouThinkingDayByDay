@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Game.Core.Base;
+using Game.Core.GameEntry;
 
 namespace Game.Game.Nation
 {
@@ -31,36 +32,45 @@ namespace Game.Game.Nation
         // 全局资源总和（供UI显示）
         public Dictionary<ResourceType, int> totalResources = new Dictionary<ResourceType, int>();
         
-        // 初始化资源字典
-        public void Init()
+        void Awake()
         {
-            // 初始化总和字典
-            foreach (ResourceType type in System.Enum.GetValues(typeof(ResourceType)))
+            if (Instance == null) Instance = this;
+            
+            // 新增：自动关联CityManager（避免手动挂载遗漏）
+            if (cityManager == null)
+            {
+                cityManager = GameManager.NationCityManager;
+            }
+            
+        }
+        // 初始化资源字典
+        // 重写Init方法，确保和GameManager时序兼容
+        public override void Init()
+        {
+            base.Init();
+            // 初始化资源字典（原有逻辑保留）
+            /*foreach (ResourceType type in System.Enum.GetValues(typeof(ResourceType)))
             {
                 if (!totalResources.ContainsKey(type))
                 {
                     totalResources[type] = 0;
                 }
             }
-
-            // 初始化城市资源（示例：给每个城市默认产量）
+            // 初始化城市资源（原有逻辑保留）
             foreach (var cityRes in allCityResources)
             {
                 foreach (ResourceType type in System.Enum.GetValues(typeof(ResourceType)))
                 {
                     if (!cityRes.resourceGrowth.ContainsKey(type))
                     {
-                        cityRes.resourceGrowth[type] = 10; // 默认每轮增长10
+                        cityRes.resourceGrowth[type] = 10;
                     }
-
                     if (!cityRes.currentResource.ContainsKey(type))
                     {
                         cityRes.currentResource[type] = 0;
                     }
                 }
-            }
-
-            // 首次计算总和
+            }*/
             CalculateTotalResources();
         }
         
@@ -126,11 +136,6 @@ namespace Game.Game.Nation
 
         private float resTimer;
         public NationCityManager cityManager;
-
-        void Awake()
-        {
-            if (Instance == null) Instance = this;
-        }
 
         void Update()
         {

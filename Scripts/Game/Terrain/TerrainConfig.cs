@@ -31,6 +31,8 @@ namespace Game.Game.Terrain
 
         [Header("资源产出加成 %")] public int foodBonus = 0;
         public int goldBonus = 0;
+        public int peopleBonus = 0;
+        public int armyBonus = 0;
         public int woodBonus = 0;
         public int stoneBonus = 0;
         public int livestockBonus = 0;

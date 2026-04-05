@@ -65,6 +65,23 @@ namespace Game.Game.Nation
         public Text textCapital;
         public float panelOffsetY = 80f;
         
+        [Header("建城限制")]//人口和军队不消耗，人越多建造越快（后续更新）
+        public float minCityDistance = 30f;       // 新城市必须离已有城市这个距离内
+        public int costFood = 15;                // 建城消耗粮食
+        public int costGold = 10;                // 消耗金币
+        public int costWood = 12;                // 消耗木材
+        public int costStone = 12;                // 消耗
+        public int costLivestock = 0;                // 消耗
+        public int costHorse = 0;                // 消耗
+        public int costCloth = 0;                // 消耗
+        public int costLeather = 0;                // 消耗
+        public int costForage = 0;                // 消耗
+        public int costSalt = 0;                // 消耗
+        public int costIron = 0;                // 消耗
+        public int costCopper = 0;                // 消耗
+        public int costGoldOre = 0;                // 消耗
+        public int costClay = 0;                // 消耗
+        
         // 地图纹理（需和绘制地形的纹理一致）
         public Texture2D mapTexture;
 
@@ -262,7 +279,8 @@ namespace Game.Game.Nation
         // ==================== 城市点击 ====================
         // 移除静态 currentSelectedCity，改为实例属性
         public CityData currentSelectedCity { get; private set; }
-        
+        public NationResManager resManager { get; set; }
+
         void AddCityClickEvent(GameObject city, CityData data)
         {
             Button btn = city.GetComponent<Button>();
@@ -289,8 +307,72 @@ namespace Game.Game.Nation
         }
         
         // 3. 重构CreateCity方法：新增地形加成计算
-        void CreateCity(Vector2 localPos, CityType type)
+        public void CreateCity(Vector2 localPos, CityType type)
         {
+            // 🔥 修复：优先从GameManager静态属性取，兜底用单例
+            NationResManager resMgr = GameManager.NationResManager ?? NationResManager.Instance;
+
+            // 安全判断（增强提示）
+            if (resMgr == null)
+            {
+                Debug.LogError("❌ RES 错误！GameManager.resManager 未赋值，且NationResManager无单例！");
+                return;
+            }
+            // 🔥 限制 1：除了第一个城，必须靠近已有城市
+            if (cityList.Count > 0)
+            {
+                bool nearAnyCity = false;
+                foreach (var City in cityList)
+                {
+                    float dist = Vector2.Distance(localPos, City.localPos);
+                    if (dist <= minCityDistance)
+                    {
+                        nearAnyCity = true;
+                        break;
+                    }
+                }
+
+                if (!nearAnyCity)
+                {
+                    Debug.LogWarning("❌ 不能建城：必须靠近已有城市！");
+                    return;
+                }
+            }
+            // 🔥 限制 2：检查资源足够吗？
+            if (resMgr != null)
+            {
+                if (resMgr.food < costFood || resMgr.gold < costGold || resMgr.wood < costWood)
+                {
+                    Debug.LogWarning("❌ 资源不足，无法建造城市！");
+                    return;
+                }
+
+                // ✅ 扣除资源
+                resMgr.food -= costFood;
+                resMgr.gold -= costGold;
+                resMgr.wood -= costWood;
+                resMgr.stone -= costStone;
+                resMgr.livestock -= costLivestock;
+                resMgr.horse -= costHorse;
+                resMgr.cloth -= costCloth;
+                resMgr.leather -= costLeather;
+                resMgr.forage -= costForage;
+                resMgr.salt -= costSalt;
+                resMgr.iron -= costIron;
+                resMgr.copper -= costCopper;
+                resMgr.goldOre -= costGoldOre;
+                resMgr.clay -= costClay;
+
+                // 刷新UI
+                EventManager.OnResourceUpdated?.Invoke();
+                Debug.Log("✅ 扣除建城资源成功！");
+            }
+            else
+            {
+                Debug.LogWarning("⚠️ 资源系统未初始化，跳过资源消耗");
+            }
+
+            // 下面是你原来的建城逻辑（完全不变）
             if (localPos.magnitude < 5f)
             {
                 Debug.Log("拒绝生成中心脏数据城池");
@@ -346,8 +428,8 @@ namespace Game.Game.Nation
             // 核心资源加成
             f = CalculateBonus(f, terrain.foodBonus);
             g = CalculateBonus(g, terrain.goldBonus);
-            p = CalculateBonus(p, terrain.goldBonus); // 人口暂用金币加成（可自定义）
-            a = CalculateBonus(a, terrain.goldBonus); // 军队暂用金币加成（可自定义）
+            p = CalculateBonus(p, terrain.peopleBonus); // 人口暂用金币加成（可自定义）
+            a = CalculateBonus(a, terrain.armyBonus); // 军队暂用金币加成（可自定义）
             
             // 扩展资源加成
             w = CalculateBonus(w, terrain.woodBonus);
@@ -397,8 +479,12 @@ namespace Game.Game.Nation
             cityList.Add(data);
             if (type == CityType.Capital) currentCapital = data;
             
+            EventManager.OnCityCreated?.Invoke();
+            
             // 🔥 新增：给城市添加点击事件
             AddCityClickEvent(city, data);
+            
+            Debug.Log($"✅ 城市创建成功！位置：{localPos}");
         }
         
         // 4. 新增：计算加成的工具方法

@@ -6933,6 +6933,21 @@ MonoBehaviour:
   btnPort: {fileID: 530405520}
   textCapital: {fileID: 927887801}
   panelOffsetY: 80
+  minCityDistance: 30
+  costFood: 15
+  costGold: 10
+  costWood: 12
+  costStone: 12
+  costLivestock: 0
+  costHorse: 0
+  costCloth: 0
+  costLeather: 0
+  costForage: 0
+  costSalt: 0
+  costIron: 0
+  costCopper: 0
+  costGoldOre: 0
+  costClay: 0
   mapTexture: {fileID: 0}
   cityList: []
 --- !u!114 &996595760
@@ -12741,10 +12756,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allCityResources: []
-  food: 5
-  gold: 5
-  people: 5
-  army: 5
+  food: 30
+  gold: 30
+  people: 30
+  army: 30
   wood: 5
   stone: 5
   livestock: 5
@@ -12786,9 +12801,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08abe7934848b154ba26bd5701b9678a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _terrainManager: {fileID: 1703380063}
-  _nationCityManager: {fileID: 996595759}
-  _nationResManager: {fileID: 1637227792}
+  terrainManager: {fileID: 1703380063}
+  cityManager: {fileID: 996595759}
+  resManager: {fileID: 1637227792}
 --- !u!1 &1637599759
 GameObject:
   m_ObjectHideFlags: 0
