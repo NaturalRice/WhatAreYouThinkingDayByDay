@@ -19,11 +19,14 @@ namespace Game.Core.GameEntry
         public static TerrainManager TerrainManager { get; private set; }
         public static NationCityManager NationCityManager { get; private set; }
         public static NationResManager NationResManager { get; private set; }
-
+        
         private void Awake()
         {
+            // 修复单例赋值
+            if (Instance == null) Instance = this;
+            else Destroy(gameObject);
+    
             InitializeSystems();
-            // 启动资源定时增长协程
             StartCoroutine(ResourceGrowthCoroutine());
         }
 

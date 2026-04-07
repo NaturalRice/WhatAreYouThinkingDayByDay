@@ -34,8 +34,6 @@ namespace Game.Game.Nation
         
         void Awake()
         {
-            if (Instance == null) Instance = this;
-            
             // 新增：自动关联CityManager（避免手动挂载遗漏）
             if (cityManager == null)
             {
@@ -85,8 +83,6 @@ namespace Game.Game.Nation
                 Debug.Log($"总资源 {kvp.Key} : {kvp.Value}");
             }
         }
-
-        public static NationResManager Instance;
 
         [Header("核心资源（默认显示）")] public int food;
         public int gold;

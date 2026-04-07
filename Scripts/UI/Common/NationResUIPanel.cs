@@ -34,7 +34,7 @@ namespace Game.UI.Common
 
         [Header("引用")]
         public NationResManager resManager;
-        public NationCityManager cityManager = new NationCityManager();
+        public NationCityManager cityManager;
         public TerrainManager terrainManager;
 
         private const float ResSettleCycle = 3f;

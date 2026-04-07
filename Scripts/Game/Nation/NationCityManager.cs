@@ -384,8 +384,10 @@ namespace Game.Game.Nation
                 Destroy(cityObj);
                 return;
             }
+            
             cityRt.localPosition = localPos;
-            cityRt.localScale = Vector3.one;
+            float finalScale = cityTypeConfigSO.GetCityScale(type);
+            cityRt.localScale = new Vector3(finalScale, finalScale, 1f);
 
             // 6. 地形校验 & 加成计算
             TerrainConfig terrain = MapTerrainChecker.GetDetailedTerrain(
@@ -571,9 +573,9 @@ namespace Game.Game.Nation
         // 新增：创建国家时初始化资源
         public void InitNationRes()
         {
-            if (NationResManager.Instance != null)
+            if (GameManager.NationResManager != null)
             {
-                NationResManager.Instance.InitRes();
+                GameManager.NationResManager.InitRes();
             }
         }
 

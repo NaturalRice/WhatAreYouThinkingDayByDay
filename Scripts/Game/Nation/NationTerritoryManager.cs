@@ -89,8 +89,9 @@ namespace Game.Game.Nation
 
             // 兜底：如果获取到的倍数异常，使用默认值
             if (mult <= 0) mult = 1f;
-
-            int r = Mathf.RoundToInt(baseTerritoryRadius * mult);
+            
+            float radiusMult = cityTypeConfig.GetRadiusMult(data.type);
+            int r = Mathf.RoundToInt(baseTerritoryRadius * mult * radiusMult);
             Color col = nationPanel.currentColor;
             col.a = territoryAlpha;
 
