@@ -11,51 +11,26 @@ namespace Game.Game.Nation
 {
     public class NationCityManager : BaseManager
     {
-        [Header("城池图标")] public Sprite spriteTown;
-        public Sprite spriteNormal;
-        public Sprite spriteCapital;
-        public Sprite spriteFarm;
-        public Sprite spriteMarket;
-        public Sprite spritePort;
-
-        [Header("城池尺寸")] public float sizeTown = 14f;
-        public float sizeNormal = 20f;
-        public float sizeCapital = 32f;
-        public float sizeFarm = 16f;
-        public float sizeMarket = 18f;
-        public float sizePort = 22f;
-
-        [Header("领土倍数")] public float territoryMultTown = 0.6f;
-        public float territoryMultNormal = 1.0f;
-        public float territoryMultCapital = 1.6f;
-        public float territoryMultFarm = 0.7f;
-        public float territoryMultMarket = 0.9f;
-        public float territoryMultPort = 1.2f;
-
-        [Header("核心资源基础产出（每结算周期）")] [Tooltip("小镇：均衡基础产出")]
-        public Vector4 resTown = new Vector4(2, 1, 3, 0);
-
-        [Tooltip("普通城：均衡产出")] public Vector4 resNormal = new Vector4(3, 2, 5, 1);
-        [Tooltip("都城：金币+军队高")] public Vector4 resCapital = new Vector4(5, 8, 10, 5);
-        [Tooltip("农村：粮食超高")] public Vector4 resFarm = new Vector4(10, 1, 4, 0);
-        [Tooltip("市集：金币高")] public Vector4 resMarket = new Vector4(2, 7, 6, 0);
-        [Tooltip("港口：金币+粮食均衡")] public Vector4 resPort = new Vector4(4, 5, 3, 1);
-
-        [Header("扩展资源基础产出（每结算周期）")] [Tooltip("小镇：少量基础资源")]
-        public Vector12 resExtendTown = new Vector12(1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0);
-
-        [Tooltip("普通城：均衡扩展资源")] public Vector12 resExtendNormal = new Vector12(2, 2, 1, 0, 1, 1, 2, 0, 0, 1, 0, 1);
-        [Tooltip("都城：少量稀有资源")] public Vector12 resExtendCapital = new Vector12(3, 3, 2, 1, 2, 2, 3, 1, 0, 1, 1, 2);
-        [Tooltip("农村：牲畜+草料+木材高")] public Vector12 resExtendFarm = new Vector12(4, 1, 5, 0, 0, 0, 6, 0, 0, 0, 0, 1);
-        [Tooltip("市集：布匹+皮革高")] public Vector12 resExtendMarket = new Vector12(1, 1, 2, 0, 3, 3, 1, 0, 0, 0, 0, 0);
-        [Tooltip("港口：石料+盐矿高")] public Vector12 resExtendPort = new Vector12(2, 4, 1, 0, 1, 1, 1, 2, 0, 0, 0, 1);
-
-        [Header("冷却")] public float createCD = 2f;
+        [Header("城市类型配置")]
+        public CityTypeConfig cityTypeConfigSO; // 引用ScriptableObject配置文件
+        
+        [Header("城市预制体")]
+        public GameObject prefabTown;       // 小镇预制体
+        public GameObject prefabNormal;     // 普通城预制体
+        public GameObject prefabCapital;    // 都城预制体
+        public GameObject prefabFarm;       // 农村预制体
+        public GameObject prefabMarket;     // 市集预制体
+        public GameObject prefabPort;       // 港口预制体
+        
+        [Header("冷却")] 
+        public float createCD = 2f;
         public Text cdTipText;
 
-        [Header("地图")] public RectTransform mapRoot;
+        [Header("地图")] 
+        public RectTransform mapRoot;
 
-        [Header("城池选择面板")] public GameObject panelCitySelect;
+        [Header("城池选择面板")] 
+        public GameObject panelCitySelect;
         public Button btnTown;
         public Button btnNormal;
         public Button btnCapital;
@@ -84,7 +59,6 @@ namespace Game.Game.Nation
         
         // 地图纹理（需和绘制地形的纹理一致）
         public Texture2D mapTexture;
-
         private CityType buildType;
         private bool canBuildCity;
         private float cdTimer;
@@ -96,6 +70,12 @@ namespace Game.Game.Nation
         private CityData currentCapital;
         
         private Vector2 buildUIPos;
+        
+        // 读取配置的工具方法
+        private CityTypeConfig GetConfigByType(CityType type)
+        {
+            return cityTypeConfigSO; 
+        }
 
         // 自定义Vector12（存储12种扩展资源）
         [System.Serializable]
@@ -309,15 +289,20 @@ namespace Game.Game.Nation
         // 3. 重构CreateCity方法：新增地形加成计算
         public void CreateCity(Vector2 localPos, CityType type)
         {
-            // 🔥 修复：优先从GameManager静态属性取，兜底用单例
-            NationResManager resMgr = GameManager.NationResManager ?? NationResManager.Instance;
-
-            // 安全判断（增强提示）
-            if (resMgr == null)
+            // 1. 校验配置
+            if (cityTypeConfigSO == null)
             {
-                Debug.LogError("❌ RES 错误！GameManager.resManager 未赋值，且NationResManager无单例！");
+                Debug.LogError("❌ 未配置CityTypeConfig ScriptableObject！");
                 return;
             }
+            var config = GetConfigByType(type);
+            if (config == null)
+            {
+                Debug.LogError($"❌ 未找到{type}类型的配置！");
+                return;
+            }
+            
+            // 2. 建城限制检查（保留原有逻辑）
             // 🔥 限制 1：除了第一个城，必须靠近已有城市
             if (cityList.Count > 0)
             {
@@ -339,152 +324,184 @@ namespace Game.Game.Nation
                 }
             }
             // 🔥 限制 2：检查资源足够吗？
-            if (resMgr != null)
+            if (resManager == null)
             {
-                if (resMgr.food < costFood || resMgr.gold < costGold || resMgr.wood < costWood)
-                {
-                    Debug.LogWarning("❌ 资源不足，无法建造城市！");
-                    return;
-                }
-
-                // ✅ 扣除资源
-                resMgr.food -= costFood;
-                resMgr.gold -= costGold;
-                resMgr.wood -= costWood;
-                resMgr.stone -= costStone;
-                resMgr.livestock -= costLivestock;
-                resMgr.horse -= costHorse;
-                resMgr.cloth -= costCloth;
-                resMgr.leather -= costLeather;
-                resMgr.forage -= costForage;
-                resMgr.salt -= costSalt;
-                resMgr.iron -= costIron;
-                resMgr.copper -= costCopper;
-                resMgr.goldOre -= costGoldOre;
-                resMgr.clay -= costClay;
-
-                // 刷新UI
-                EventManager.OnResourceUpdated?.Invoke();
-                Debug.Log("✅ 扣除建城资源成功！");
+                Debug.LogError("❌ 未绑定NationResManager！");
+                return;
             }
-            else
+            // 检查资源是否足够
+            if (!resManager.CheckResEnough(
+                    costFood, costGold, costWood, costStone, 
+                    costLivestock, costHorse, costCloth, costLeather,
+                    costForage, costSalt, costIron, costCopper,
+                    costGoldOre, costClay))
             {
-                Debug.LogWarning("⚠️ 资源系统未初始化，跳过资源消耗");
+                Debug.LogWarning("❌ 资源不足，无法建造城市！");
+                return;
             }
+            // 扣除资源
+            resManager.ConsumeRes(
+                costFood, costGold, costWood, costStone,
+                costLivestock, costHorse, costCloth, costLeather,
+                costForage, costSalt, costIron, costCopper,
+                costGoldOre, costClay);
+            EventManager.OnResourceUpdated?.Invoke();
+            Debug.Log("✅ 扣除建城资源成功！");
 
-            // 下面是你原来的建城逻辑（完全不变）
+            // 🔥 限制 3：中心区域禁止建城
             if (localPos.magnitude < 5f)
             {
                 Debug.Log("拒绝生成中心脏数据城池");
                 return;
             }
             
-            // 🔥 修复：先获取地形
+            // 3. 获取对应预制体（优先级：单独配置的预制体 > SO中的预制体）
+            GameObject cityPrefab = type switch
+            {
+                CityType.Town => prefabTown != null ? prefabTown : cityTypeConfigSO.prefabTown,
+                CityType.Normal => prefabNormal != null ? prefabNormal : cityTypeConfigSO.prefabNormal,
+                CityType.Capital => prefabCapital != null ? prefabCapital : cityTypeConfigSO.prefabCapital,
+                CityType.Farm => prefabFarm != null ? prefabFarm : cityTypeConfigSO.prefabFarm,
+                CityType.Market => prefabMarket != null ? prefabMarket : cityTypeConfigSO.prefabMarket,
+                CityType.Port => prefabPort != null ? prefabPort : cityTypeConfigSO.prefabPort,
+                _ => cityTypeConfigSO.prefabNormal // 兜底
+            };
+            if (cityPrefab == null)
+            {
+                Debug.LogError($"❌ {type}类型的城市预制体未配置！");
+                return;
+            }
+            
+            // 4. 实例化预制体（核心步骤）
+            GameObject cityObj = Instantiate(cityPrefab, mapRoot);
+            cityObj.name = $"City_{type}_{cityList.Count + 1}"; // 规范命名
+
+            // 5. 设置预制体位置（保留原有坐标逻辑）
+            RectTransform cityRt = cityObj.GetComponent<RectTransform>();
+            if (cityRt == null)
+            {
+                Debug.LogError($"❌ {cityObj.name}预制体缺少RectTransform组件！");
+                Destroy(cityObj);
+                return;
+            }
+            cityRt.localPosition = localPos;
+            cityRt.localScale = Vector3.one;
+
+            // 6. 地形校验 & 加成计算
             TerrainConfig terrain = MapTerrainChecker.GetDetailedTerrain(
                 MapGlobalData.savedMapTexture, 
                 ConvertLocalPosToPixelPos(localPos)
             );
-
-            // 🔥 修复：地形不允许建城 → 直接阻止
             if (terrain != null && !terrain.canBuildCity)
             {
                 Debug.Log($"❌ 无法在【{terrain.terrainName}】上建造城市");
+                Destroy(cityObj);
                 return;
             }
 
-            GameObject city = new GameObject($"City_{type}");
-            city.transform.SetParent(mapRoot);
-            city.transform.localPosition = localPos;
-            city.transform.localScale = Vector3.one;
+            // 7. 读取基础资源产出（从SO配置）
+            Vector4 coreResBase = GetCoreResBaseByType(type);
+            Vector12 extendResBase = GetExtendResBaseByType(type);
 
-            Image img = city.AddComponent<Image>();
-            img.color = Color.white;
-            img.raycastTarget = true;
+            // 8. 应用地形加成
+            int foodOut = CalculateBonus((int)coreResBase.x, terrain.foodBonus);
+            int goldOut = CalculateBonus((int)coreResBase.y, terrain.goldBonus);
+            int peopleOut = CalculateBonus((int)coreResBase.z, terrain.peopleBonus);
+            int armyOut = CalculateBonus((int)coreResBase.w, terrain.armyBonus);
 
-            RectTransform rt = city.GetComponent<RectTransform>();
-            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(30, 30);
-
-            float size = sizeNormal;
-            Sprite sprite = spriteNormal;
-
-            // 核心资源产出赋值（基础值）
-            int f = 0, g = 0, p = 0, a = 0;
-            // 扩展资源产出赋值（基础值）
-            int w = 0, s = 0, l = 0, h = 0, c = 0, le = 0, fo = 0, sa = 0, i = 0, co = 0, go = 0, cl = 0;
-
-            switch (type)
-            {
-                case CityType.Town: size = sizeTown; sprite = spriteTown; f = (int)resTown.x; g = (int)resTown.y; p = (int)resTown.z; a = (int)resTown.w; w = resExtendTown.wood; s = resExtendTown.stone; l = resExtendTown.livestock; h = resExtendTown.horse; c = resExtendTown.cloth; le = resExtendTown.leather; fo = resExtendTown.forage; sa = resExtendTown.salt; i = resExtendTown.iron; co = resExtendTown.copper; go = resExtendTown.goldOre; cl = resExtendTown.clay; break;
-                case CityType.Normal: size = sizeNormal; sprite = spriteNormal; f = (int)resNormal.x; g = (int)resNormal.y; p = (int)resNormal.z; a = (int)resNormal.w; w = resExtendNormal.wood; s = resExtendNormal.stone; l = resExtendNormal.livestock; h = resExtendNormal.horse; c = resExtendNormal.cloth; le = resExtendNormal.leather; fo = resExtendNormal.forage; sa = resExtendNormal.salt; i = resExtendNormal.iron; co = resExtendNormal.copper; go = resExtendNormal.goldOre; cl = resExtendNormal.clay; break;
-                case CityType.Capital: size = sizeCapital; sprite = spriteCapital; f = (int)resCapital.x; g = (int)resCapital.y; p = (int)resCapital.z; a = (int)resCapital.w; w = resExtendCapital.wood; s = resExtendCapital.stone; l = resExtendCapital.livestock; h = resExtendCapital.horse; c = resExtendCapital.cloth; le = resExtendCapital.leather; fo = resExtendCapital.forage; sa = resExtendCapital.salt; i = resExtendCapital.iron; co = resExtendCapital.copper; go = resExtendCapital.goldOre; cl = resExtendCapital.clay; break;
-                case CityType.Farm: size = sizeFarm; sprite = spriteFarm; f = (int)resFarm.x; g = (int)resFarm.y; p = (int)resFarm.z; a = (int)resFarm.w; w = resExtendFarm.wood; s = resExtendFarm.stone; l = resExtendFarm.livestock; h = resExtendFarm.horse; c = resExtendFarm.cloth; le = resExtendFarm.leather; fo = resExtendFarm.forage; sa = resExtendFarm.salt; i = resExtendFarm.iron; co = resExtendFarm.copper; go = resExtendFarm.goldOre; cl = resExtendFarm.clay; break;
-                case CityType.Market: size = sizeMarket; sprite = spriteMarket; f = (int)resMarket.x; g = (int)resMarket.y; p = (int)resMarket.z; a = (int)resMarket.w; w = resExtendMarket.wood; s = resExtendMarket.stone; l = resExtendMarket.livestock; h = resExtendMarket.horse; c = resExtendMarket.cloth; le = resExtendMarket.leather; fo = resExtendMarket.forage; sa = resExtendMarket.salt; i = resExtendMarket.iron; co = resExtendMarket.copper; go = resExtendMarket.goldOre; cl = resExtendMarket.clay; break;
-                case CityType.Port: size = sizePort; sprite = spritePort; f = (int)resPort.x; g = (int)resPort.y; p = (int)resPort.z; a = (int)resPort.w; w = resExtendPort.wood; s = resExtendPort.stone; l = resExtendPort.livestock; h = resExtendPort.horse; c = resExtendPort.cloth; le = resExtendPort.leather; fo = resExtendPort.forage; sa = resExtendPort.salt; i = resExtendPort.iron; co = resExtendPort.copper; go = resExtendPort.goldOre; cl = resExtendPort.clay; break;
-            }
-
-            // ========== 新增：应用地形资源加成 ==========
-            // 核心资源加成
-            f = CalculateBonus(f, terrain.foodBonus);
-            g = CalculateBonus(g, terrain.goldBonus);
-            p = CalculateBonus(p, terrain.peopleBonus); // 人口暂用金币加成（可自定义）
-            a = CalculateBonus(a, terrain.armyBonus); // 军队暂用金币加成（可自定义）
+            int woodOut = CalculateBonus(extendResBase.wood, terrain.woodBonus);
+            int stoneOut = CalculateBonus(extendResBase.stone, terrain.stoneBonus);
+            int livestockOut = CalculateBonus(extendResBase.livestock, terrain.livestockBonus);
+            int horseOut = CalculateBonus(extendResBase.horse, terrain.horseBonus);
+            int clothOut = CalculateBonus(extendResBase.cloth, terrain.clothBonus);
+            int leatherOut = CalculateBonus(extendResBase.leather, terrain.leatherBonus);
+            int forageOut = CalculateBonus(extendResBase.forage, terrain.forageBonus);
+            int saltOut = CalculateBonus(extendResBase.salt, terrain.saltBonus);
+            int ironOut = CalculateBonus(extendResBase.iron, terrain.ironBonus);
+            int copperOut = CalculateBonus(extendResBase.copper, terrain.copperBonus);
+            int goldOreOut = CalculateBonus(extendResBase.goldOre, terrain.goldOreBonus);
+            int clayOut = CalculateBonus(extendResBase.clay, terrain.clayBonus);
             
-            // 扩展资源加成
-            w = CalculateBonus(w, terrain.woodBonus);
-            s = CalculateBonus(s, terrain.stoneBonus);
-            l = CalculateBonus(l, terrain.livestockBonus);
-            h = CalculateBonus(h, terrain.horseBonus);
-            c = CalculateBonus(c, terrain.clothBonus);
-            le = CalculateBonus(le, terrain.leatherBonus);
-            fo = CalculateBonus(fo, terrain.forageBonus);
-            sa = CalculateBonus(sa, terrain.saltBonus);
-            i = CalculateBonus(i, terrain.ironBonus);
-            co = CalculateBonus(co, terrain.copperBonus);
-            go = CalculateBonus(go, terrain.goldOreBonus);
-            cl = CalculateBonus(cl, terrain.clayBonus);
-
-            rt.sizeDelta = new Vector2(size, size);
-            img.sprite = sprite;
-
-            // CityData赋值（原有逻辑不变，只是值已包含地形加成）
-            CityData data = new CityData();
-            data.go = city;
-            data.type = type;
-            data.localPos = localPos;
-            data.rt = rt;
-            // 🔥 关键修复：赋值地形配置
-            data.terrainConfig = terrain; 
+            // 9. 构建CityData（仅存储预制体引用和计算后的数据）
+            CityData cityData = new CityData();
+            cityData.go = cityObj;
+            cityData.type = type;
+            cityData.localPos = localPos;
+            cityData.rt = cityObj.GetComponent<RectTransform>();
+            cityData.terrainConfig = terrain;
             
-            // 核心资源（已加成）
-            data.foodOut = f;
-            data.goldOut = g;
-            data.peopleOut = p;
-            data.armyOut = a;
-            // 扩展资源（已加成）
-            data.woodOut = w;
-            data.stoneOut = s;
-            data.livestockOut = l;
-            data.horseOut = h;
-            data.clothOut = c;
-            data.leatherOut = le;
-            data.forageOut = fo;
-            data.saltOut = sa;
-            data.ironOut = i;
-            data.copperOut = co;
-            data.goldOreOut = go;
-            data.clayOut = cl;
-
-            cityList.Add(data);
-            if (type == CityType.Capital) currentCapital = data;
+            // 赋值计算后的资源产出
+            cityData.foodOut = foodOut;
+            cityData.goldOut = goldOut;
+            cityData.peopleOut = peopleOut;
+            cityData.armyOut = armyOut;
+            cityData.woodOut = woodOut;
+            cityData.stoneOut = stoneOut;
+            cityData.livestockOut = livestockOut;
+            cityData.horseOut = horseOut;
+            cityData.clothOut = clothOut;
+            cityData.leatherOut = leatherOut;
+            cityData.forageOut = forageOut;
+            cityData.saltOut = saltOut;
+            cityData.ironOut = ironOut;
+            cityData.copperOut = copperOut;
+            cityData.goldOreOut = goldOreOut;
+            cityData.clayOut = clayOut;
             
+            // 10. 绑定点击事件（预制体需提前添加Button组件，若无则自动添加）
+            AddCityClickEvent(cityObj, cityData);
+
+            // 11. 加入管理列表 & 触发事件
+            cityList.Add(cityData);
+            if (type == CityType.Capital) currentCapital = cityData;
             EventManager.OnCityCreated?.Invoke();
-            
-            // 🔥 新增：给城市添加点击事件
-            AddCityClickEvent(city, data);
-            
-            Debug.Log($"✅ 城市创建成功！位置：{localPos}");
+            Debug.Log($"✅ 预制体创建城市成功！类型：{type}，位置：{localPos}，地形：{terrain?.terrainName ?? "未知"}");
+        }
+        
+        // 新增：从SO读取核心资源基础值
+        private Vector4 GetCoreResBaseByType(CityType type)
+        {
+            return type switch
+            {
+                CityType.Town => cityTypeConfigSO.resTown,
+                CityType.Normal => cityTypeConfigSO.resNormal,
+                CityType.Capital => cityTypeConfigSO.resCapital,
+                CityType.Farm => cityTypeConfigSO.resFarm,
+                CityType.Market => cityTypeConfigSO.resMarket,
+                CityType.Port => cityTypeConfigSO.resPort,
+                _ => Vector4.zero
+            };
+        }
+        
+        // 新增：从SO读取扩展资源基础值
+        private Vector12 GetExtendResBaseByType(CityType type)
+        {
+            return type switch
+            {
+                CityType.Town => cityTypeConfigSO.resExtendTown,
+                CityType.Normal => cityTypeConfigSO.resExtendNormal,
+                CityType.Capital => cityTypeConfigSO.resExtendCapital,
+                CityType.Farm => cityTypeConfigSO.resExtendFarm,
+                CityType.Market => cityTypeConfigSO.resExtendMarket,
+                CityType.Port => cityTypeConfigSO.resExtendPort,
+                _ => new Vector12()
+            };
+        }
+        
+        // 新增：读取对应城市类型的领土倍数
+        public float GetTerritoryMultByType(CityType type)
+        {
+            if (cityTypeConfigSO == null) return 1.0f; // 默认值
+            return type switch
+            {
+                CityType.Town => cityTypeConfigSO.territoryMultTown,
+                CityType.Normal => cityTypeConfigSO.territoryMultNormal,
+                CityType.Capital => cityTypeConfigSO.territoryMultCapital,
+                CityType.Farm => cityTypeConfigSO.territoryMultFarm,
+                CityType.Market => cityTypeConfigSO.territoryMultMarket,
+                CityType.Port => cityTypeConfigSO.territoryMultPort,
+                _ => 1.0f
+            };
         }
         
         // 4. 新增：计算加成的工具方法
@@ -495,69 +512,50 @@ namespace Game.Game.Nation
             float bonusValue = baseValue * (1 + bonusPercent / 100f);
             return Mathf.Max(0, Mathf.RoundToInt(bonusValue)); // 确保结果非负
         }
-
+        
+        //计算加成的工具方法
         void MoveCapital()
         {
-            // 旧都城改为普通城，同步普通城资源产出
+            // 旧都城改为普通城
+            if (currentCapital == null) return;
+    
+            // 方案1：替换预制体（推荐）
+            Destroy(currentCapital.go); // 销毁旧都城对象
+            GameObject newNormalCity = Instantiate(cityTypeConfigSO.prefabNormal, mapRoot);
+            newNormalCity.name = $"City_Normal_{cityList.Count}";
+            RectTransform newRt = newNormalCity.GetComponent<RectTransform>();
+            newRt.localPosition = currentCapital.localPos;
+            newRt.localScale = Vector3.one;
+    
+            // 更新旧都城的CityData
+            currentCapital.go = newNormalCity;
             currentCapital.type = CityType.Normal;
-            currentCapital.rt.sizeDelta = new Vector2(sizeNormal, sizeNormal);
-            Image oldImg = currentCapital.go.GetComponent<Image>();
-            oldImg.sprite = spriteNormal;
-            oldImg.color = Color.white;
-            // 同步核心资源
-            currentCapital.foodOut = (int)resNormal.x;
-            currentCapital.goldOut = (int)resNormal.y;
-            currentCapital.peopleOut = (int)resNormal.z;
-            currentCapital.armyOut = (int)resNormal.w;
-            // 同步扩展资源
-            currentCapital.woodOut = resExtendNormal.wood;
-            currentCapital.stoneOut = resExtendNormal.stone;
-            currentCapital.livestockOut = resExtendNormal.livestock;
-            currentCapital.horseOut = resExtendNormal.horse;
-            currentCapital.clothOut = resExtendNormal.cloth;
-            currentCapital.leatherOut = resExtendNormal.leather;
-            currentCapital.forageOut = resExtendNormal.forage;
-            currentCapital.saltOut = resExtendNormal.salt;
-            currentCapital.ironOut = resExtendNormal.iron;
-            currentCapital.copperOut = resExtendNormal.copper;
-            currentCapital.goldOreOut = resExtendNormal.goldOre;
-            currentCapital.clayOut = resExtendNormal.clay;
+            currentCapital.rt = newRt;
+            // 重新计算普通城的资源产出
+            Vector4 normalCoreRes = cityTypeConfigSO.resNormal;
+            Vector12 normalExtendRes = cityTypeConfigSO.resExtendNormal;
+            currentCapital.foodOut = CalculateBonus((int)normalCoreRes.x, currentCapital.terrainConfig.foodBonus);
+            currentCapital.goldOut = CalculateBonus((int)normalCoreRes.y, currentCapital.terrainConfig.goldBonus);
+            currentCapital.peopleOut = CalculateBonus((int)normalCoreRes.z, currentCapital.terrainConfig.peopleBonus);
+            currentCapital.armyOut = CalculateBonus((int)normalCoreRes.w, currentCapital.terrainConfig.armyBonus);
+            // 扩展资源同理...
+            currentCapital.woodOut = CalculateBonus((int)normalCoreRes.x, currentCapital.terrainConfig.woodBonus);
+            currentCapital.stoneOut = CalculateBonus((int)normalCoreRes.y, currentCapital.terrainConfig.stoneBonus);
+            currentCapital.livestockOut = CalculateBonus((int)normalCoreRes.z, currentCapital.terrainConfig.livestockBonus);
+            currentCapital.horseOut = CalculateBonus((int)normalCoreRes.w, currentCapital.terrainConfig.horseBonus);
+            currentCapital.clothOut = CalculateBonus((int)normalCoreRes.x, currentCapital.terrainConfig.clothBonus);
+            currentCapital.leatherOut = CalculateBonus((int)normalCoreRes.y, currentCapital.terrainConfig.leatherBonus);
+            currentCapital.forageOut = CalculateBonus((int)normalCoreRes.z, currentCapital.terrainConfig.forageBonus);
+            currentCapital.saltOut = CalculateBonus((int)normalCoreRes.w, currentCapital.terrainConfig.saltBonus);
+            currentCapital.ironOut = CalculateBonus((int)normalCoreRes.x, currentCapital.terrainConfig.ironBonus);
+            currentCapital.copperOut = CalculateBonus((int)normalCoreRes.y, currentCapital.terrainConfig.copperBonus);
+            currentCapital.goldOreOut = CalculateBonus((int)normalCoreRes.z, currentCapital.terrainConfig.goldOreBonus);
+            currentCapital.clayOut = CalculateBonus((int)normalCoreRes.w, currentCapital.terrainConfig.clayBonus);
+            
+            AddCityClickEvent(newNormalCity, currentCapital);
 
+            // 创建新都城
             CreateCity(buildUIPos, CityType.Capital);
-        }
-
-        // 修复：老式结构体，兼容所有Unity版本
-        public struct CityResourceOutput
-        {
-            public int totalFood;
-            public int totalGold;
-            public int totalPeople;
-            public int totalArmy;
-        }
-
-        // 新增：计算所有城池的总资源产出（给ResManager调用）
-        public CityResourceOutput GetAllCityResOut()
-        {
-            int f = 0;
-            int g = 0;
-            int p = 0;
-            int a = 0;
-            foreach (var city in cityList)
-            {
-                if (city == null || city.go == null) continue;
-                f += city.foodOut;
-                g += city.goldOut;
-                p += city.peopleOut;
-                a += city.armyOut;
-            }
-
-            // 完整兼容写法（确保无简化）
-            CityResourceOutput res = new CityResourceOutput();
-            res.totalFood = f;
-            res.totalGold = g;
-            res.totalPeople = p;
-            res.totalArmy = a;
-            return res;
         }
 
         void UpdateButtonAnim()

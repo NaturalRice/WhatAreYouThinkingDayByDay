@@ -48,29 +48,6 @@ namespace Game.Game.Nation
         public override void Init()
         {
             base.Init();
-            // 初始化资源字典（原有逻辑保留）
-            /*foreach (ResourceType type in System.Enum.GetValues(typeof(ResourceType)))
-            {
-                if (!totalResources.ContainsKey(type))
-                {
-                    totalResources[type] = 0;
-                }
-            }
-            // 初始化城市资源（原有逻辑保留）
-            foreach (var cityRes in allCityResources)
-            {
-                foreach (ResourceType type in System.Enum.GetValues(typeof(ResourceType)))
-                {
-                    if (!cityRes.resourceGrowth.ContainsKey(type))
-                    {
-                        cityRes.resourceGrowth[type] = 10;
-                    }
-                    if (!cityRes.currentResource.ContainsKey(type))
-                    {
-                        cityRes.currentResource[type] = 0;
-                    }
-                }
-            }*/
             CalculateTotalResources();
         }
         
@@ -108,7 +85,6 @@ namespace Game.Game.Nation
                 Debug.Log($"总资源 {kvp.Key} : {kvp.Value}");
             }
         }
-
 
         public static NationResManager Instance;
 
@@ -217,11 +193,66 @@ namespace Game.Game.Nation
             goldOre = 3;
             clay = 25;
         }
-
-        // 根据类型获取资源配置（贴图）
-        public ResourceConfig GetResConfig(ResourceType type)
+        
+        public bool CheckResEnough(
+            int costFood, int costGold, int costWood, int costStone,
+            int costLivestock, int costHorse, int costCloth, int costLeather,
+            int costForage, int costSalt, int costIron, int costCopper,
+            int costGoldOre, int costClay)
         {
-            return resConfigs.Find(cfg => cfg.resType == type);
+            return food >= costFood
+                   && gold >= costGold
+                   && wood >= costWood
+                   && stone >= costStone
+                   && livestock >= costLivestock
+                   && horse >= costHorse
+                   && cloth >= costCloth
+                   && leather >= costLeather
+                   && forage >= costForage
+                   && salt >= costSalt
+                   && iron >= costIron
+                   && copper >= costCopper
+                   && goldOre >= costGoldOre
+                   && clay >= costClay;
+        }
+        
+        // 修复报错4：补充ConsumeRes方法（参数和NationCityManager调用一致）
+        public void ConsumeRes(
+            int costFood, int costGold, int costWood, int costStone,
+            int costLivestock, int costHorse, int costCloth, int costLeather,
+            int costForage, int costSalt, int costIron, int costCopper,
+            int costGoldOre, int costClay)
+        {
+            food -= costFood;
+            gold -= costGold;
+            wood -= costWood;
+            stone -= costStone;
+            livestock -= costLivestock;
+            horse -= costHorse;
+            cloth -= costCloth;
+            leather -= costLeather;
+            forage -= costForage;
+            salt -= costSalt;
+            iron -= costIron;
+            copper -= costCopper;
+            goldOre -= costGoldOre;
+            clay -= costClay;
+
+            // 确保资源不小于0
+            food = Mathf.Max(0, food);
+            gold = Mathf.Max(0, gold);
+            wood = Mathf.Max(0, wood);
+            stone = Mathf.Max(0, stone);
+            livestock = Mathf.Max(0, livestock);
+            horse = Mathf.Max(0, horse);
+            cloth = Mathf.Max(0, cloth);
+            leather = Mathf.Max(0, leather);
+            forage = Mathf.Max(0, forage);
+            salt = Mathf.Max(0, salt);
+            iron = Mathf.Max(0, iron);
+            copper = Mathf.Max(0, copper);
+            goldOre = Mathf.Max(0, goldOre);
+            clay = Mathf.Max(0, clay);
         }
     }
 

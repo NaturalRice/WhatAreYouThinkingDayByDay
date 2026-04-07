@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a801cf8c0f75d34c9583cb786e52760, type: 3}
+  m_Name: CityTypeConfig
+  m_EditorClassIdentifier: 
+  prefabTown: {fileID: 3682691115820445728, guid: e0b0aaee83212cb4788e51f922979f4c, type: 3}
+  prefabNormal: {fileID: 3682691115820445728, guid: c3270167e91b7c04fa858f0428f5075c, type: 3}
+  prefabCapital: {fileID: 3682691115820445728, guid: 5ff290f71cab87d4d9f0e4d7dcbb8e55, type: 3}
+  prefabFarm: {fileID: 3682691115820445728, guid: e3a22c31461c3fd4ea00bf55b40e698c, type: 3}
+  prefabMarket: {fileID: 3682691115820445728, guid: 9cf0af0f175e6474682f6809f4a211fa, type: 3}
+  prefabPort: {fileID: 3682691115820445728, guid: e40d3ed40365be14c80c93274681ed5c, type: 3}
+  territoryMultTown: 0.6
+  territoryMultNormal: 1
+  territoryMultCapital: 1.6
+  territoryMultFarm: 0.7
+  territoryMultMarket: 0.9
+  territoryMultPort: 1.2
+  resTown: {x: 2, y: 1, z: 3, w: 0}
+  resNormal: {x: 3, y: 2, z: 5, w: 1}
+  resCapital: {x: 5, y: 8, z: 10, w: 5}
+  resFarm: {x: 10, y: 1, z: 4, w: 0}
+  resMarket: {x: 2, y: 7, z: 6, w: 0}
+  resPort: {x: 4, y: 5, z: 3, w: 1}
+  resExtendTown:
+    wood: 1
+    stone: 1
+    livestock: 1
+    horse: 0
+    cloth: 0
+    leather: 0
+    forage: 1
+    salt: 0
+    iron: 0
+    copper: 0
+    goldOre: 0
+    clay: 0
+  resExtendNormal:
+    wood: 2
+    stone: 2
+    livestock: 1
+    horse: 0
+    cloth: 1
+    leather: 1
+    forage: 2
+    salt: 0
+    iron: 0
+    copper: 1
+    goldOre: 0
+    clay: 1
+  resExtendCapital:
+    wood: 3
+    stone: 3
+    livestock: 2
+    horse: 1
+    cloth: 2
+    leather: 2
+    forage: 3
+    salt: 1
+    iron: 0
+    copper: 1
+    goldOre: 1
+    clay: 2
+  resExtendFarm:
+    wood: 4
+    stone: 1
+    livestock: 5
+    horse: 0
+    cloth: 0
+    leather: 0
+    forage: 6
+    salt: 0
+    iron: 0
+    copper: 0
+    goldOre: 0
+    clay: 1
+  resExtendMarket:
+    wood: 1
+    stone: 1
+    livestock: 2
+    horse: 0
+    cloth: 3
+    leather: 3
+    forage: 1
+    salt: 0
+    iron: 0
+    copper: 0
+    goldOre: 0
+    clay: 0
+  resExtendPort:
+    wood: 2
+    stone: 4
+    livestock: 1
+    horse: 0
+    cloth: 1
+    leather: 1
+    forage: 1
+    salt: 2
+    iron: 0
+    copper: 0
+    goldOre: 0
+    clay: 1

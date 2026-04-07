@@ -12,6 +12,7 @@ namespace Game.Game.Nation
         [Header("核心")] public RectTransform mapRoot;
         public NationCityManager cityManager;
         public NationSettingPanel nationPanel;
+        public CityTypeConfig cityTypeConfig;
         public RawImage territoryMask;
 
         [Header("领土基础半径")] public float baseTerritoryRadius = 50f;
@@ -70,9 +71,12 @@ namespace Game.Game.Nation
 
             territoryTex.Apply();
         }
-
+        
         void Draw(CityData data)
         {
+            // 新增：空值校验（防止核心变量为空）
+            if (data == null || cityTypeConfig == null) return;
+    
             Vector2 lp = data.localPos;
             Vector2 tp = UIToTex(lp);
 
@@ -80,27 +84,11 @@ namespace Game.Game.Nation
             int cy = Mathf.RoundToInt(tp.y);
             float mult = 1f;
 
-            switch (data.type)
-            {
-                case CityType.Town:
-                    mult = cityManager.territoryMultTown;
-                    break;
-                case CityType.Normal:
-                    mult = cityManager.territoryMultNormal;
-                    break;
-                case CityType.Capital:
-                    mult = cityManager.territoryMultCapital;
-                    break;
-                case CityType.Farm:
-                    mult = cityManager.territoryMultFarm;
-                    break;
-                case CityType.Market:
-                    mult = cityManager.territoryMultMarket;
-                    break;
-                case CityType.Port:
-                    mult = cityManager.territoryMultPort;
-                    break;
-            }
+            // 优化：改用 cityManager 的 GetTerritoryMultByType 方法（复用已有逻辑，减少重复）
+            mult = cityManager.GetTerritoryMultByType(data.type);
+
+            // 兜底：如果获取到的倍数异常，使用默认值
+            if (mult <= 0) mult = 1f;
 
             int r = Mathf.RoundToInt(baseTerritoryRadius * mult);
             Color col = nationPanel.currentColor;
