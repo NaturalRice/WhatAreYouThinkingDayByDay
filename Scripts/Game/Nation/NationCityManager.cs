@@ -11,6 +11,9 @@ namespace Game.Game.Nation
 {
     public class NationCityManager : BaseManager
     {
+        [Header("模式")]
+        public bool isPlayer = true; // 玩家=true，AI=false
+        
         [Header("城市类型配置")]
         public CityTypeConfig cityTypeConfigSO; // 引用ScriptableObject配置文件
         
@@ -67,9 +70,12 @@ namespace Game.Game.Nation
         private float doubleClickTime = 0.25f;
 
         public List<CityData> cityList = new List<CityData>();
+        public NationTerritoryManager territoryManager;
         private CityData currentCapital;
         
         private Vector2 buildUIPos;
+        
+        public Color nationColor;
         
         // 读取配置的工具方法
         private CityTypeConfig GetConfigByType(CityType type)
@@ -113,21 +119,36 @@ namespace Game.Game.Nation
 
         void Start()
         {
+            // AI 跳过所有 UI 初始化
+            if (!isPlayer) return;
+            
             if (cdTipText != null) cdTipText.gameObject.SetActive(false);
-            panelCitySelect.SetActive(false);
+            
             cityList.Clear();
             currentCapital = null;
-
-            btnTown.onClick.AddListener(() => SelectType(CityType.Town));
-            btnNormal.onClick.AddListener(() => SelectType(CityType.Normal));
-            btnCapital.onClick.AddListener(() => SelectType(CityType.Capital));
-            btnFarm.onClick.AddListener(() => SelectType(CityType.Farm));
-            btnMarket.onClick.AddListener(() => SelectType(CityType.Market));
-            btnPort.onClick.AddListener(() => SelectType(CityType.Port));
+            
+            // 👇 下面所有原有代码，只有玩家会执行
+            if (btnTown != null)
+                btnTown.onClick.AddListener(() => SelectType(CityType.Town));
+            if (btnNormal != null) 
+                btnNormal.onClick.AddListener(() => SelectType(CityType.Normal));
+            if (btnCapital != null)
+                btnCapital.onClick.AddListener(() => SelectType(CityType.Capital));
+            if (btnFarm != null)
+                btnFarm.onClick.AddListener(() => SelectType(CityType.Farm));
+            if (btnMarket != null)
+                btnMarket.onClick.AddListener(() => SelectType(CityType.Market));
+            if (btnPort != null)
+                btnPort.onClick.AddListener(() => SelectType(CityType.Port));
+            // 隐藏面板
+            if(panelCitySelect != null) panelCitySelect.SetActive(false);
         }
 
         void Update()
         {
+            // AI 跳过所有 UI 更新
+            if (!isPlayer) return;
+            
             HandleCooldown();
             HandleDoubleClick();
             HandleHotkey();
@@ -225,7 +246,7 @@ namespace Game.Game.Nation
             cdTimer = createCD;
         }
 
-        bool IsLand(Vector2 localPos)
+        public bool IsLand(Vector2 localPos)
         {
             // 转换UI坐标到地图纹理像素坐标（复用原有坐标转换逻辑）
             Vector2 pixelPos = ConvertLocalPosToPixelPos(localPos);
@@ -324,9 +345,13 @@ namespace Game.Game.Nation
                 }
             }
             // 🔥 限制 2：检查资源足够吗？
+            // 安全获取资源管理器（自动找自己身上的）
+            if (resManager == null)
+                resManager = GetComponent<NationResManager>();
+
             if (resManager == null)
             {
-                Debug.LogError("❌ 未绑定NationResManager！");
+                Debug.LogError("AI/玩家缺少 NationResManager 组件！", gameObject);
                 return;
             }
             // 检查资源是否足够
@@ -347,6 +372,7 @@ namespace Game.Game.Nation
                 costGoldOre, costClay);
             EventManager.OnResourceUpdated?.Invoke();
             Debug.Log("✅ 扣除建城资源成功！");
+            
 
             // 🔥 限制 3：中心区域禁止建城
             if (localPos.magnitude < 5f)
@@ -458,6 +484,12 @@ namespace Game.Game.Nation
             if (type == CityType.Capital) currentCapital = cityData;
             EventManager.OnCityCreated?.Invoke();
             Debug.Log($"✅ 预制体创建城市成功！类型：{type}，位置：{localPos}，地形：{terrain?.terrainName ?? "未知"}");
+            
+            // 玩家建第一座城 → 启动 AI
+            if (cityList.Count == 1)
+            {
+                AINationManager.Instance?.StartSpawnAI();
+            }
         }
         
         // 新增：从SO读取核心资源基础值
@@ -562,6 +594,9 @@ namespace Game.Game.Nation
 
         void UpdateButtonAnim()
         {
+            // 全空值保护
+            if (btnTown == null || btnNormal == null) return;
+            
             btnTown.transform.localScale = Input.GetKey(KeyCode.Alpha1) ? new Vector3(1.1f, 1.1f, 1) : Vector3.one;
             btnNormal.transform.localScale = Input.GetKey(KeyCode.Alpha2) ? new Vector3(1.1f, 1.1f, 1) : Vector3.one;
             btnCapital.transform.localScale = Input.GetKey(KeyCode.Alpha3) ? new Vector3(1.1f, 1.1f, 1) : Vector3.one;

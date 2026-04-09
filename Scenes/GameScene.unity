@@ -8191,6 +8191,68 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 818068040}
   m_CullTransparentMesh: 1
+--- !u!1 &836493382
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 836493384}
+  - component: {fileID: 836493383}
+  - component: {fileID: 836493386}
+  m_Layer: 0
+  m_Name: AINationManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &836493383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 836493382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57041bd61feb2d444825d7b0faa350ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxAICount: 3
+  aiBuildInterval: 12
+  minDistanceFromPlayer: 250
+  playerCityManager: {fileID: 996595759}
+  nationPanel: {fileID: 927897767}
+  mapRoot: {fileID: 129111885}
+--- !u!4 &836493384
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 836493382}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 251.27054, y: 803.28326, z: -101.21207}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &836493386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 836493382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4773eb86c3521f942a0ef02149b5c5e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &856758398
 GameObject:
   m_ObjectHideFlags: 0
@@ -9362,6 +9424,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97d792ae59a67ef4a96339af3498ffd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isPlayer: 1
   cityTypeConfigSO: {fileID: 11400000, guid: 010d49443066d2540a68358afa2dca82, type: 2}
   prefabTown: {fileID: 3682691115820445728, guid: e0b0aaee83212cb4788e51f922979f4c, type: 3}
   prefabNormal: {fileID: 3682691115820445728, guid: c3270167e91b7c04fa858f0428f5075c, type: 3}
@@ -9524,6 +9587,7 @@ MonoBehaviour:
     copperOut: 0
     goldOreOut: 0
     clayOut: 0
+  territoryManager: {fileID: 996595760}
 --- !u!114 &996595760
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9541,8 +9605,9 @@ MonoBehaviour:
   nationPanel: {fileID: 927897767}
   cityTypeConfig: {fileID: 11400000, guid: 010d49443066d2540a68358afa2dca82, type: 2}
   territoryMask: {fileID: 692699650}
-  baseTerritoryRadius: 5
+  baseTerritoryRadius: 3
   territoryAlpha: 0.3
+  nationColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &998223756
 GameObject:
   m_ObjectHideFlags: 0
