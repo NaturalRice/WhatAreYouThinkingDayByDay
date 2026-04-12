@@ -8227,6 +8227,10 @@ MonoBehaviour:
   playerCityManager: {fileID: 996595759}
   nationPanel: {fileID: 927897767}
   mapRoot: {fileID: 129111885}
+  aiNationId: 0
+  cityBuildCooldown: 3
+  minPopulationToExpand: 10
+  maxCityCount: 5
 --- !u!4 &836493384
 Transform:
   m_ObjectHideFlags: 0
@@ -9588,6 +9592,8 @@ MonoBehaviour:
     goldOreOut: 0
     clayOut: 0
   territoryManager: {fileID: 996595760}
+  nationColor: {r: 0, g: 0, b: 0, a: 0}
+  territoryPrefab: {fileID: 0}
 --- !u!114 &996595760
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -11,19 +11,16 @@ namespace Game.Game.Nation
     {
         [Header("核心")] public RectTransform mapRoot;
         public NationCityManager cityManager;
-        public NationSettingPanel nationPanel;
         public CityTypeConfig cityTypeConfig;
         public RawImage territoryMask;
 
-        [Header("领土基础半径")] public float baseTerritoryRadius = 3f;
+        [Header("领土显示")] 
+        public float baseTerritoryRadius = 3f;
         [Range(0.1f, 0.5f)] public float territoryAlpha = 0.3f;
+        public Color nationColor;
 
         private Texture2D territoryTex;
         private int lastCityCount = 0;
-        
-        [Header("核心配置")]
-        public Color nationColor;
-
         private List<CityData> _cityList;
         private bool _needRedraw;
         
@@ -31,7 +28,7 @@ namespace Game.Game.Nation
         {
             _cityList = new List<CityData>();
         }
-
+        
         void Start()
         {
             if (MapGlobalData.savedMapTexture != null)
@@ -40,7 +37,6 @@ namespace Game.Game.Nation
                     MapGlobalData.savedMapTexture.width,
                     MapGlobalData.savedMapTexture.height,
                     TextureFormat.RGBA32, false);
-
                 territoryTex.filterMode = FilterMode.Bilinear;
                 territoryTex.wrapMode = TextureWrapMode.Clamp;
                 ClearTerritory();
@@ -91,21 +87,23 @@ namespace Game.Game.Nation
         
         void Draw(CityData data)
         {
-            // 新增：空值校验（防止核心变量为空）
             if (data == null || cityTypeConfig == null || territoryTex == null) return;
-    
+
             Vector2 lp = data.localPos;
             Vector2 tp = UIToTex(lp);
 
             int cx = Mathf.RoundToInt(tp.x);
             int cy = Mathf.RoundToInt(tp.y);
-            float mult = cityManager.GetTerritoryMultByType(data.type);// 优化：改用 cityManager 的 GetTerritoryMultByType 方法（复用已有逻辑，减少重复）
-            if (mult <= 0) mult = 1f;// 兜底：如果获取到的倍数异常，使用默认值
-            
+            float mult = cityManager.GetTerritoryMultByType(data.type);
+            if (mult <= 0) mult = 1f;
+
             float radiusMult = cityTypeConfig.GetRadiusMult(data.type);
             int r = Mathf.RoundToInt(baseTerritoryRadius * mult * radiusMult);
-            // 🔥 修复：AI 自动取自己的颜色，不依赖 UI 面板
-            Color col = cityManager.nationColor;
+    
+            // ----------------———
+            // 🔥 修复：用自己的颜色，不依赖面板
+            // ----------------———
+            Color col = nationColor;
             col.a = territoryAlpha;
 
             for (int dx = -r; dx <= r; dx++)
@@ -118,7 +116,7 @@ namespace Game.Game.Nation
                 if (territoryTex.GetPixel(x, y).a < 0.01f)
                     territoryTex.SetPixel(x, y, col);
             }
-
+            
             switch (data.type)
             {
                 case CityType.Town: mult = cityTypeConfig.territoryMultTown; break;

@@ -23,8 +23,9 @@ public class AICityBuilder : MonoBehaviour
     private void Update()
     {
         if (_cityMgr == null || _resMgr == null) return;
-
         _buildTimer += Time.deltaTime;
+        
+        // 🔥 AI加速建城（更容易看到效果）
         if (_buildTimer >= _root.aiBuildInterval)
         {
             _buildTimer = 0;
@@ -39,38 +40,24 @@ public class AICityBuilder : MonoBehaviour
         _cityMgr.CreateCity(pos, CityType.Normal);
     }
     
-    // AI 自动建城（完全遵守玩家规则）
     private void TryBuildCity()
     {
-        if (_cityMgr.cityList.Count >= 5) return;
+        // 最多6城
+        if (_cityMgr.cityList.Count >= 6) return;
 
-        Vector2 pos = GetRandomValidPosition();
+        // 🔥 强制在自己已有城市附近生成（100%满足距离条件）
+        Vector2 basePos = _cityMgr.cityList[0].localPos;
+        Vector2 randomOffset = new Vector2(Random.Range(-40, 40), Random.Range(-40, 40));
+        Vector2 finalPos = basePos + randomOffset;
 
-        // 远离玩家
-        if (Vector2.Distance(pos, _root.playerCityManager.cityList[0].localPos) < _root.minDistanceFromPlayer)
-            return;
-
-        // 必须是陆地
-        if (!_cityMgr.IsLand(pos)) return;
-
-        // 必须靠近自己的城市
-        bool canBuild = false;
-        foreach (var city in _cityMgr.cityList)
-        {
-            if (Vector2.Distance(pos, city.localPos) < _cityMgr.minCityDistance)
-            {
-                canBuild = true;
-                break;
-            }
-        }
-        if (!canBuild) return;
-
+        // 陆地检查
+        if (!_cityMgr.IsLand(finalPos)) return;
+        
         // 随机城市类型
         CityType type = GetRandomCityType();
-        if (type == CityType.Port && !_cityMgr.IsLand(pos)) return;
 
         // 🔥 关键：AI 完全和玩家一样，会检查资源、消耗资源
-        _cityMgr.CreateCity(pos, type);
+        _cityMgr.CreateCity(finalPos, type);
     }
     
     private Vector2 GetRandomValidPosition()
