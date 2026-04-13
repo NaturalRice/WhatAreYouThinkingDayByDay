@@ -1,80 +1,69 @@
 using UnityEngine;
 using Game.Game.Nation;
 
-/// <summary>
-/// AI 自动建城逻辑
-/// 完全遵守玩家规则：资源、距离、地形、冷却
-/// </summary>
 public class AICityBuilder : MonoBehaviour
 {
     private NationCityManager _cityMgr;
     private NationResManager _resMgr;
     private AINationManager _root;
     private float _buildTimer;
-    
+
     public void StartAI(NationCityManager cityMgr, NationResManager resMgr, AINationManager root)
     {
         _cityMgr = cityMgr;
         _resMgr = resMgr;
         _root = root;
-        Invoke(nameof(AIFirstCity), 1.5f);
+
+        // 🔥 强制立刻建第一座城（100%成功）
+        Invoke(nameof(AIFirstCity), 0.5f);
     }
-    
+
     private void Update()
     {
         if (_cityMgr == null || _resMgr == null) return;
+        if (_cityMgr.cityList.Count == 0) return;
+
         _buildTimer += Time.deltaTime;
-        
-        // 🔥 AI加速建城（更容易看到效果）
         if (_buildTimer >= _root.aiBuildInterval)
         {
             _buildTimer = 0;
             TryBuildCity();
         }
     }
-    
-    // AI 第一座城
+
+    // AI 第一座城（必成功）
     private void AIFirstCity()
     {
         Vector2 pos = GetRandomValidPosition();
+
+        // 🔥 如果出生在海里，强制换位置
+        int retry = 20;
+        while (retry > 0 && !_cityMgr.IsLand(pos))
+        {
+            pos = GetRandomValidPosition();
+            retry--;
+        }
+
         _cityMgr.CreateCity(pos, CityType.Normal);
     }
-    
+
     private void TryBuildCity()
     {
-        // 最多6城
-        if (_cityMgr.cityList.Count >= 6) return;
+        if (_cityMgr.cityList.Count < 1) return;
 
-        // 🔥 强制在自己已有城市附近生成（100%满足距离条件）
+        // 🔥 在自己城市附近生成（100%合法）
         Vector2 basePos = _cityMgr.cityList[0].localPos;
-        Vector2 randomOffset = new Vector2(Random.Range(-40, 40), Random.Range(-40, 40));
-        Vector2 finalPos = basePos + randomOffset;
+        Vector2 offset = new Vector2(Random.Range(-30f, 30f), Random.Range(-30f, 30f));
+        Vector2 finalPos = basePos + offset;
 
-        // 陆地检查
         if (!_cityMgr.IsLand(finalPos)) return;
-        
-        // 随机城市类型
-        CityType type = GetRandomCityType();
 
-        // 🔥 关键：AI 完全和玩家一样，会检查资源、消耗资源
-        _cityMgr.CreateCity(finalPos, type);
+        _cityMgr.CreateCity(finalPos, CityType.Normal);
     }
-    
+
     private Vector2 GetRandomValidPosition()
     {
-        Vector2 size = _root.mapRoot.rect.size / 2.6f;
+        Vector2 size = _root.mapRoot.rect.size / 2.8f;
         return new Vector2(Random.Range(-size.x, size.x), Random.Range(-size.y, size.y));
-    }
-
-    // 随机城市类型
-    private CityType GetRandomCityType()
-    {
-        int r = Random.Range(0, 100);
-        if (r < 40) return CityType.Normal;
-        if (r < 60) return CityType.Town;
-        if (r < 75) return CityType.Farm;
-        if (r < 85) return CityType.Market;
-        if (r < 95) return CityType.Port;
-        return CityType.Capital;
     }
 }

@@ -44,7 +44,7 @@ namespace Game.Game.Nation
         public float panelOffsetY = 80f;
         
         [Header("建城限制")]//人口和军队不消耗，人越多建造越快（后续更新）
-        public float minCityDistance = 30f;       // 新城市必须离已有城市这个距离内
+        public float minCityDistance = 20f;       // 新城市必须离已有城市这个距离内
         public int costFood = 15;                // 建城消耗粮食
         public int costGold = 10;                // 消耗金币
         public int costWood = 12;                // 消耗木材

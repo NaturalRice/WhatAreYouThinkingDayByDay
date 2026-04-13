@@ -6971,6 +6971,7 @@ GameObject:
   - component: {fileID: 692699649}
   - component: {fileID: 692699651}
   - component: {fileID: 692699650}
+  - component: {fileID: 692699652}
   m_Layer: 5
   m_Name: TerritoryMask
   m_TagString: Untagged
@@ -7032,6 +7033,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 692699648}
   m_CullTransparentMesh: 1
+--- !u!114 &692699652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 692699648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0cfcc631f3aabc408442e0f97181d58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mapRoot: {fileID: 129111885}
+  cityTypeConfig: {fileID: 11400000, guid: 010d49443066d2540a68358afa2dca82, type: 2}
+  globalTerritoryMask: {fileID: 692699650}
+  baseTerritoryRadius: 3
+  territoryAlpha: 0.3
 --- !u!1 &704446304
 GameObject:
   m_ObjectHideFlags: 0
@@ -8221,16 +8239,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57041bd61feb2d444825d7b0faa350ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxAICount: 3
-  aiBuildInterval: 12
+  maxAICount: 5
+  aiBuildInterval: 5
   minDistanceFromPlayer: 250
   playerCityManager: {fileID: 996595759}
-  nationPanel: {fileID: 927897767}
   mapRoot: {fileID: 129111885}
-  aiNationId: 0
-  cityBuildCooldown: 3
-  minPopulationToExpand: 10
-  maxCityCount: 5
 --- !u!4 &836493384
 Transform:
   m_ObjectHideFlags: 0
@@ -9329,7 +9342,6 @@ GameObject:
   - component: {fileID: 996595756}
   - component: {fileID: 996595758}
   - component: {fileID: 996595759}
-  - component: {fileID: 996595760}
   m_Layer: 5
   m_Name: Panel_GameBg
   m_TagString: Untagged
@@ -9448,7 +9460,7 @@ MonoBehaviour:
   btnPort: {fileID: 530405520}
   textCapital: {fileID: 927887801}
   panelOffsetY: 80
-  minCityDistance: 30
+  minCityDistance: 20
   costFood: 15
   costGold: 10
   costWood: 12
@@ -9591,28 +9603,7 @@ MonoBehaviour:
     copperOut: 0
     goldOreOut: 0
     clayOut: 0
-  territoryManager: {fileID: 996595760}
-  nationColor: {r: 0, g: 0, b: 0, a: 0}
-  territoryPrefab: {fileID: 0}
---- !u!114 &996595760
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 996595754}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0cfcc631f3aabc408442e0f97181d58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mapRoot: {fileID: 129111885}
-  cityManager: {fileID: 996595759}
-  nationPanel: {fileID: 927897767}
-  cityTypeConfig: {fileID: 11400000, guid: 010d49443066d2540a68358afa2dca82, type: 2}
-  territoryMask: {fileID: 692699650}
-  baseTerritoryRadius: 3
-  territoryAlpha: 0.3
+  territoryManager: {fileID: 692699652}
   nationColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &998223756
 GameObject:

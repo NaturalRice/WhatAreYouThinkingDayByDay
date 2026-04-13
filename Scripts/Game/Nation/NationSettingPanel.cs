@@ -15,7 +15,14 @@ namespace Game.Game.Nation
         public Button btnClose;
 
         [Header("数据")] public Color currentColor = Color.blue;
+        
+        public static NationSettingPanel Instance;
 
+        void Awake()
+        {
+            Instance = this;
+        }
+        
         private string[] governmentTypes =
         {
             "君主制", "共和制", "联邦制", "部落联盟", "帝国制", "城邦制"

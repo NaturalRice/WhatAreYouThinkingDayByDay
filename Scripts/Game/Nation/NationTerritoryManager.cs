@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 using Game.Core.Base;
 using Game.Map;
 using static Game.Game.Nation.NationCityManager;
@@ -9,143 +8,125 @@ namespace Game.Game.Nation
 {
     public class NationTerritoryManager : BaseManager
     {
-        [Header("核心")] public RectTransform mapRoot;
-        public NationCityManager cityManager;
+        [Header("核心")]
+        public RectTransform mapRoot;
         public CityTypeConfig cityTypeConfig;
-        public RawImage territoryMask;
+        public RawImage globalTerritoryMask;
 
-        [Header("领土显示")] 
-        public float baseTerritoryRadius = 3f;
+        [Header("领土显示")]
+        public float baseTerritoryRadius = 50f;
         [Range(0.1f, 0.5f)] public float territoryAlpha = 0.3f;
-        public Color nationColor;
 
-        private Texture2D territoryTex;
-        private int lastCityCount = 0;
-        private List<CityData> _cityList;
-        private bool _needRedraw;
-        
-        private void Awake()
-        {
-            _cityList = new List<CityData>();
-        }
-        
+        private Texture2D _globalTerritoryTex;
+        private int _lastTotalCities = -1;
+
         void Start()
         {
             if (MapGlobalData.savedMapTexture != null)
             {
-                territoryTex = new Texture2D(
+                _globalTerritoryTex = new Texture2D(
                     MapGlobalData.savedMapTexture.width,
                     MapGlobalData.savedMapTexture.height,
                     TextureFormat.RGBA32, false);
-                territoryTex.filterMode = FilterMode.Bilinear;
-                territoryTex.wrapMode = TextureWrapMode.Clamp;
-                ClearTerritory();
-                territoryTex.Apply();
-                territoryMask.texture = territoryTex;
+                _globalTerritoryTex.filterMode = FilterMode.Bilinear;
+                _globalTerritoryTex.wrapMode = TextureWrapMode.Clamp;
+                ClearAllTerritory();
+                _globalTerritoryTex.Apply();
+                globalTerritoryMask.texture = _globalTerritoryTex;
             }
         }
 
         void Update()
         {
-            if (_needRedraw)
-            {
-                _needRedraw = false;
-                RedrawAll();
-            }
-            
-            if (!NationSettingPanel.isNationCreated || territoryTex == null)
-                return;
+            if (_globalTerritoryTex == null) return;
 
-            int count = cityManager.GetCityCount();
-
-            if (count > 0 && count != lastCityCount)
+            // 🔥 修复卡顿：只有城市数量变化才重绘
+            int currentTotal = GetAllCityCount();
+            if (currentTotal != _lastTotalCities)
             {
-                RedrawAll();
-                lastCityCount = count;
-            }
-            else if (count == 0 && lastCityCount != 0)
-            {
-                ClearTerritory();
-                territoryTex.Apply();
-                lastCityCount = 0;
+                RedrawAllNations();
+                _lastTotalCities = currentTotal;
             }
         }
 
-        void RedrawAll()
+        // 🔥 获得所有城市数量
+        int GetAllCityCount()
         {
-            ClearTerritory();
-            var list = cityManager.GetCityDataList();
-
-            foreach (var data in list)
-            {
-                if (data == null || data.go == null) continue;
-                Draw(data);
-            }
-
-            territoryTex.Apply();
+            int count = 0;
+            NationCityManager[] all = FindObjectsOfType<NationCityManager>();
+            foreach (var n in all) count += n.GetCityCount();
+            return count;
         }
-        
-        void Draw(CityData data)
+
+        // 统一绘制所有国家
+        void RedrawAllNations()
         {
-            if (data == null || cityTypeConfig == null || territoryTex == null) return;
+            ClearAllTerritory();
 
-            Vector2 lp = data.localPos;
-            Vector2 tp = UIToTex(lp);
-
-            int cx = Mathf.RoundToInt(tp.x);
-            int cy = Mathf.RoundToInt(tp.y);
-            float mult = cityManager.GetTerritoryMultByType(data.type);
-            if (mult <= 0) mult = 1f;
-
-            float radiusMult = cityTypeConfig.GetRadiusMult(data.type);
-            int r = Mathf.RoundToInt(baseTerritoryRadius * mult * radiusMult);
-    
-            // ----------------———
-            // 🔥 修复：用自己的颜色，不依赖面板
-            // ----------------———
-            Color col = nationColor;
-            col.a = territoryAlpha;
-
-            for (int dx = -r; dx <= r; dx++)
-            for (int dy = -r; dy <= r; dy++)
+            NationCityManager[] allNations = FindObjectsOfType<NationCityManager>();
+            foreach (var nation in allNations)
             {
-                if (dx * dx + dy * dy > r * r) continue;
-                int x = cx + dx;
-                int y = cy + dy;
-                if (x < 0 || x >= territoryTex.width || y < 0 || y >= territoryTex.height) continue;
-                if (territoryTex.GetPixel(x, y).a < 0.01f)
-                    territoryTex.SetPixel(x, y, col);
+                if (nation == null) continue;
+
+                // 🔥 修复空引用：安全获取玩家颜色
+                Color col = nation.isPlayer
+                    ? (NationSettingPanel.Instance != null ? NationSettingPanel.Instance.currentColor : Color.red)
+                    : nation.nationColor;
+
+                DrawOneNation(nation, col);
             }
-            
-            switch (data.type)
+
+            _globalTerritoryTex.Apply();
+            globalTerritoryMask.texture = _globalTerritoryTex;
+        }
+
+        // 绘制单个国家
+        void DrawOneNation(NationCityManager nation, Color color)
+        {
+            if (nation == null || nation.GetCityCount() == 0) return;
+
+            var cities = nation.GetCityDataList();
+            color.a = territoryAlpha;
+
+            foreach (var city in cities)
             {
-                case CityType.Town: mult = cityTypeConfig.territoryMultTown; break;
-                case CityType.Normal: mult = cityTypeConfig.territoryMultNormal; break;
-                case CityType.Capital: mult = cityTypeConfig.territoryMultCapital; break;
-                case CityType.Farm: mult = cityTypeConfig.territoryMultFarm; break;
-                case CityType.Market: mult = cityTypeConfig.territoryMultMarket; break;
-                case CityType.Port: mult = cityTypeConfig.territoryMultPort; break;
+                if (city == null || city.go == null) continue;
+
+                Vector2 lp = city.localPos;
+                Vector2 tp = UIToTex(lp);
+                int cx = Mathf.RoundToInt(tp.x);
+                int cy = Mathf.RoundToInt(tp.y);
+
+                float mult = nation.GetTerritoryMultByType(city.type);
+                float radiusMult = cityTypeConfig.GetRadiusMult(city.type);
+                int r = Mathf.RoundToInt(baseTerritoryRadius * mult * radiusMult);
+
+                for (int dx = -r; dx <= r; dx++)
+                for (int dy = -r; dy <= r; dy++)
+                {
+                    if (dx * dx + dy * dy > r * r) continue;
+                    int x = cx + dx;
+                    int y = cy + dy;
+                    if (x < 0 || x >= _globalTerritoryTex.width || y < 0 || y >= _globalTerritoryTex.height) continue;
+                    _globalTerritoryTex.SetPixel(x, y, color);
+                }
             }
         }
 
-        // ✅ 最终修复：领土坐标完全正确，不再Y轴翻转
         Vector2 UIToTex(Vector2 local)
         {
             Rect r = mapRoot.rect;
             float x = (local.x + r.width / 2f) / r.width;
             float y = (local.y + r.height / 2f) / r.height;
-            return new Vector2(
-                x * territoryTex.width,
-                y * territoryTex.height
-            );
+            return new Vector2(x * _globalTerritoryTex.width, y * _globalTerritoryTex.height);
         }
 
-        void ClearTerritory()
+        void ClearAllTerritory()
         {
-            var clear = new Color[territoryTex.width * territoryTex.height];
-            for (int i = 0; i < clear.Length; i++)
-                clear[i] = Color.clear;
-            territoryTex.SetPixels(clear);
+            if (_globalTerritoryTex == null) return;
+            var clear = new Color[_globalTerritoryTex.width * _globalTerritoryTex.height];
+            for (int i = 0; i < clear.Length; i++) clear[i] = Color.clear;
+            _globalTerritoryTex.SetPixels(clear);
         }
     }
 }

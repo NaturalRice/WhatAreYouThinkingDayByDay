@@ -7,8 +7,8 @@ public class AINationManager : MonoBehaviour
     public static AINationManager Instance;
 
     [Header("AI 设置")]
-    public int maxAICount = 2;
-    public float aiBuildInterval = 10f;
+    public int maxAICount = 5;
+    public float aiBuildInterval = 5f;
     public float minDistanceFromPlayer = 150f;
 
     [Header("引用")]
@@ -36,7 +36,7 @@ public class AINationManager : MonoBehaviour
         if (_currentAICount > 0) return;
         for (int i = 0; i < maxAICount; i++) SpawnOneAI();
     }
-
+    
     private void SpawnOneAI()
     {
         GameObject aiRoot = new GameObject($"AI_Nation_{_currentAICount++}");
@@ -44,35 +44,27 @@ public class AINationManager : MonoBehaviour
 
         NationCityManager aiCityMgr = aiRoot.AddComponent<NationCityManager>();
         NationResManager aiResMgr = aiRoot.AddComponent<NationResManager>();
-        NationTerritoryManager aiTerriMgr = aiRoot.AddComponent<NationTerritoryManager>();
         AICityBuilder aiBuilder = aiRoot.AddComponent<AICityBuilder>();
 
-        // AI 关闭UI
         aiCityMgr.isPlayer = false;
 
-        // 复制配置
         aiCityMgr.cityTypeConfigSO = playerCityManager.cityTypeConfigSO;
         aiCityMgr.mapRoot = mapRoot;
-        aiCityMgr.territoryManager = aiTerriMgr;
         aiCityMgr.resManager = aiResMgr;
         aiCityMgr.mapTexture = playerCityManager.mapTexture;
 
-        aiTerriMgr.mapRoot = mapRoot;
-        aiTerriMgr.cityManager = aiCityMgr;
-        aiTerriMgr.cityTypeConfig = playerCityManager.cityTypeConfigSO;
-
-        // 初始资源
         aiResMgr.InitRes();
         aiResMgr.food = 200;
         aiResMgr.gold = 150;
         aiResMgr.wood = 150;
         aiResMgr.stone = 150;
 
-        // 颜色
         Color playerColor = playerCityManager.nationColor;
         Color aiColor = GetRandomColorAvoidPlayer(playerColor);
+    
+        // 🔥 只需要这两行！
         aiCityMgr.nationColor = aiColor;
-        aiTerriMgr.nationColor = aiColor;
+
         aiCityMgr.SetNationData(aiColor);
 
         aiBuilder.StartAI(aiCityMgr, aiResMgr, this);
