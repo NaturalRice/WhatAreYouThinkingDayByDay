@@ -60,6 +60,14 @@ namespace Game.Game.Nation
         public int costGoldOre = 0;                // 消耗
         public int costClay = 0;                // 消耗
         
+        [Header("War")]
+        public int baseArmyPerCity = 10;
+        public float armyGrowInterval = 3f;
+
+        [Header("Debug")]
+        public NationDiplomacy diplomacy;
+        private float m_ArmyGrowTimer;
+        
         // 地图纹理（需和绘制地形的纹理一致）
         public Texture2D mapTexture;
         private CityType buildType;
@@ -126,6 +134,8 @@ namespace Game.Game.Nation
             
             cityList.Clear();
             currentCapital = null;
+            
+            diplomacy = new NationDiplomacy(this);
             
             // 👇 下面所有原有代码，只有玩家会执行
             if (btnTown != null)
@@ -281,18 +291,23 @@ namespace Game.Game.Nation
         // 移除静态 currentSelectedCity，改为实例属性
         public CityData currentSelectedCity { get; private set; }
         public NationResManager resManager { get; set; }
-
-        void AddCityClickEvent(GameObject city, CityData data)
+        
+        void AddCityClickEvent(GameObject cityGo, CityData data)
         {
-            Button btn = city.GetComponent<Button>();
-            if (btn == null) btn = city.AddComponent<Button>();
+            Button btn = cityGo.GetComponent<Button>();
+            if (btn == null) btn = cityGo.AddComponent<Button>();
 
             btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(() => 
+            btn.onClick.AddListener(() =>
             {
                 currentSelectedCity = data;
-                CityInfoPanel.Instance.ShowPanel(data);
-                Debug.Log("✅ 城市已点击：" + data.type + " 地形：" + (data.terrainConfig != null ? data.terrainConfig.terrainName : "未设置"));
+
+                // 打开信息面板
+                if (CityInfoPanel.Instance != null)
+                {
+                    CityInfoPanel.Instance.ShowPanel(data);
+                    CityAttackPanel.Instance.TryShowAttack(data);
+                }
             });
         }
         
@@ -663,6 +678,53 @@ namespace Game.Game.Nation
             }
 
             return output;
+        }
+        
+        // 攻打一个城市
+        public bool AttackCity(CityData attackerCity, CityData targetCity, NationCityManager targetNation)
+        {
+            // 不能打自己
+            if (targetNation == this) return false;
+
+            // 必须在战争中
+            if (!diplomacy.IsAtWar(targetNation))
+            {
+                diplomacy.DeclareWar(targetNation);
+                Debug.Log($"{gameObject.name} 向 {targetNation.gameObject.name} 宣战！");
+            }
+
+            int attackPower = attackerCity.armyOut;
+            int defendPower = targetCity.armyOut;
+
+            // 战斗
+            attackerCity.armyOut = 0;
+
+            if (attackPower > defendPower)
+            {
+                // 胜利 → 占领城市
+                targetNation.LoseCity(targetCity);
+                this.CaptureCity(targetCity);
+                Debug.Log($"{gameObject.name} 占领了敌方城市！");
+                return true;
+            }
+            else
+            {
+                Debug.Log("攻城失败！");
+                return false;
+            }
+        }
+
+        // 失去城市
+        public void LoseCity(CityData city)
+        {
+            cityList.Remove(city);
+        }
+
+        // 占领城市
+        public void CaptureCity(CityData city)
+        {
+            cityList.Add(city);
+            // 领土自动重绘
         }
     }
 }

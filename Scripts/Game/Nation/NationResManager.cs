@@ -252,7 +252,7 @@ namespace Game.Game.Nation
         }
     }
 
-// 核心资源产出结构体
+    // 核心资源产出结构体
     public struct CoreResOutput
     {
         public int food;
@@ -261,7 +261,7 @@ namespace Game.Game.Nation
         public int army;
     }
 
-// 扩展资源产出结构体
+    // 扩展资源产出结构体
     public struct ExtendResOutput
     {
         public int wood;

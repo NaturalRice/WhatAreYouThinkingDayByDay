@@ -19,6 +19,8 @@ MonoBehaviour:
   blockTerritory: 1
   foodBonus: 3
   goldBonus: 3
+  peopleBonus: 0
+  armyBonus: 0
   woodBonus: 3
   stoneBonus: 3
   livestockBonus: 3
