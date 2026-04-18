@@ -478,6 +478,7 @@ namespace Game.Game.Nation
             cityData.goldOut = goldOut;
             cityData.peopleOut = peopleOut;
             cityData.armyOut = armyOut;
+            cityData.currentArmy = armyOut; // 初始化当前军队数量
             cityData.woodOut = woodOut;
             cityData.stoneOut = stoneOut;
             cityData.livestockOut = livestockOut;

@@ -40,7 +40,7 @@ public class NationWarManager : MonoBehaviour
     {
         if (power <= 0 || from == null || target == null) return;
 
-        from.armyOut -= power;
+        from.currentArmy -= power;
 
         ArmyUnit unit = new ArmyUnit
         {
@@ -69,7 +69,7 @@ public class NationWarManager : MonoBehaviour
         NationCityManager targetNation = GetNationByCity(unit.targetCity);
         if (targetNation == null) return;
 
-        int defense = unit.targetCity.armyOut * 2;
+        int defense = unit.targetCity.currentArmy * 2;
 
         if (unit.power > defense)
         {

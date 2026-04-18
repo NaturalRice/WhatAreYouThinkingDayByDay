@@ -85,6 +85,7 @@ public class AINationManager : MonoBehaviour
         aiCityMgr.SetNationData(aiColor);
 
         aiBuilder.StartAI(aiCityMgr, aiResMgr, this);
+        RegisterAINation(aiCityMgr);
     }
 
     private Color GetRandomColorAvoidPlayer(Color player)
@@ -103,20 +104,26 @@ public class AINationManager : MonoBehaviour
     // AI尝试发起攻击
     private void AITryAttack(NationCityManager aiNation)
     {
-        // 1. AI无城市/无军队，跳过
+        // 1. 增加随机性，不是每次都攻击
+        if (Random.value > 0.3f) return;
+
+        // 2. AI无城市/无军队，跳过
         if (aiNation.cityList.Count == 0) return;
+        
+        // 3. 选择军队最多的城市作为进攻起点
         CityData fromCity = null;
+        int maxArmy = 0;
         foreach (var city in aiNation.cityList)
         {
-            if (city.armyOut > 0)
+            if (city.currentArmy > maxArmy)
             {
+                maxArmy = city.currentArmy;
                 fromCity = city;
-                break;
             }
         }
-        if (fromCity == null) return;
+        if (fromCity == null || maxArmy <= 0) return;
 
-        // 2. 寻找敌方城市（非自己的城市）
+        // 4. 寻找敌方城市（非自己的城市）
         List<CityData> enemyCities = new List<CityData>();
         foreach (var nation in FindObjectsOfType<NationCityManager>())
         {
@@ -127,18 +134,29 @@ public class AINationManager : MonoBehaviour
         }
         if (enemyCities.Count == 0) return;
 
-        // 3. 随机选一个敌方城市攻击
-        CityData targetCity = enemyCities[Random.Range(0, enemyCities.Count)];
+        // 5. 选择防御最弱的敌方城市攻击
+        CityData targetCity = null;
+        int minDefense = int.MaxValue;
+        foreach (var city in enemyCities)
+        {
+            if (city.currentArmy < minDefense)
+            {
+                minDefense = city.currentArmy;
+                targetCity = city;
+            }
+        }
+        if (targetCity == null) return;
+
         NationCityManager targetNation = NationWarManager.Instance.GetNationByCity(targetCity);
         if (targetNation == null) return;
 
-        // 4. 宣战+出兵（至少1支）
+        // 6. 宣战+出兵（至少1支）
         if (aiNation.diplomacy == null)
             aiNation.diplomacy = new NationDiplomacy(aiNation);
         if (!aiNation.diplomacy.IsAtWar(targetNation))
             aiNation.diplomacy.DeclareWar(targetNation);
 
-        int sendCount = Mathf.Max(1, fromCity.armyOut / 2);
+        int sendCount = Mathf.Max(1, fromCity.currentArmy / 2);
         NationWarManager.Instance.SendArmy(aiNation, fromCity, targetCity, sendCount);
         Debug.Log($"[AI攻击] {aiNation.gameObject.name} 派出{sendCount}军队攻击{targetNation.gameObject.name}的{targetCity.type}");
     }

@@ -164,6 +164,15 @@ namespace Game.Game.Nation
             copper = Mathf.Max(0, copper);
             goldOre = Mathf.Max(0, goldOre);
             clay = Mathf.Max(0, clay);
+
+            // 更新城市当前军队数量
+            foreach (var city in cityManager.cityList)
+            {
+                if (city != null)
+                {
+                    city.currentArmy += city.armyOut;
+                }
+            }
         }
 
         // 初始化所有资源

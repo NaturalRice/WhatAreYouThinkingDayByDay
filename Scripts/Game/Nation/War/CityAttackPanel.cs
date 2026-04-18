@@ -23,7 +23,17 @@ public class CityAttackPanel : MonoBehaviour
 
         // 自动找玩家
         if (playerNation == null)
-            playerNation = FindObjectOfType<NationCityManager>();
+        {
+            NationCityManager[] allNations = FindObjectsOfType<NationCityManager>();
+            foreach (var nation in allNations)
+            {
+                if (nation.isPlayer)
+                {
+                    playerNation = nation;
+                    break;
+                }
+            }
+        }
     }
 
     // 外部调用：显示/隐藏按钮
@@ -77,7 +87,7 @@ public class CityAttackPanel : MonoBehaviour
         playerNation.diplomacy.DeclareWar(targetNation);
 
         // 发送军队
-        int sendCount = fromCity.armyOut / 2;
+        int sendCount = fromCity.currentArmy / 2;
         NationWarManager.Instance.SendArmy(
             playerNation,
             fromCity,

@@ -19,6 +19,8 @@ namespace Game.Game.Nation
         public int goldOut;
         public int peopleOut;
         public int armyOut;
+        // 当前资源数量
+        public int currentArmy;
         // 扩展资源产出
         public int woodOut;
         public int stoneOut;
